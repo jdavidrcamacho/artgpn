@@ -10,7 +10,7 @@ from gpyrn.weightFunction import Linear as weightL
 from gpyrn.weightFunction import Polynomial as weightP
 
 
-class gprn(object):
+class network(object):
     """ 
         Class to create our Gaussian process regression network. See Wilson et
     al. (2012) for more information on this framework.
@@ -228,58 +228,19 @@ class gprn(object):
         diag = np.concatenate(self.yerr) * np.identity(self.time.size * self.p)
         K = K_start + diag
         #more "weight" to the diagonal to avoid a ill-conditioned matrix
-#        if nugget:
-#            nugget_value = 0.01
-#            K = (1 - nugget_value)*K + nugget_value*np.diag(np.diag(K))
-#        #shifting all the eigenvalues up by the positive scalar to avoid a ill-conditioned matrix
-#        if shift:
-#            shift = 0.01
-#            K = K + shift*np.identity(self.time.size * self.p)
+        if nugget:
+            nugget_value = 0.01
+            K = (1 - nugget_value)*K + nugget_value*np.diag(np.diag(K))
+        #shifting all the eigenvalues up by the positive scalar to avoid a ill-conditioned matrix
+        if shift:
+            shift = 0.01
+            K = K + shift*np.identity(self.time.size * self.p)
         return K
 
-    def old_log_like(self, nodes, weight, weight_values, means, jitters):
-        """ 
-            Calculates the marginal log likelihood. This version creates a big
-        covariance matrix K made of block matrices of each dataset and then
-        calculates just one log-likelihood.
-            See Rasmussen & Williams (2006), page 113.
-            Parameters:
-                nodes = the node functions f(x) (f hat)
-                weight = the weight funtion w(x)
-                weight_values = array with the weights of w11, w12, etc... 
-                means = mean function being used
-                jitters = jitter value of each dataset
-            Returns:
-                log_like  = Marginal log likelihood
-        """
-        #calculation of the covariance matrix
-        K = self.compute_matrix(nodes, weight, weight_values, jitters, self.time)
-        jitt = [] #jitters
-        for i in  range(1, self.p+1):
-            jitt.append((jitters[i - 1])**2 * np.ones_like(self.time))
-        jitt = np.array(jitt)
-        jitt = np.concatenate(jitt)
-        K += jitt * np.diag(np.diag(K))
-        #calculation of the means
-        yy = np.concatenate(self.y)
-        means = self.means
-        yy = yy - self._mean(means)
-        #log marginal likelihood calculation
-        try:
-            L1 = cho_factor(K, overwrite_a=True, lower=False)
-            log_like = - 0.5*np.dot(yy.T, cho_solve(L1, yy)) \
-                       - np.sum(np.log(np.diag(L1[0]))) \
-                       - 0.5*yy.size*np.log(2*np.pi)
-        except LinAlgError:
-            return -np.inf
-        return log_like
 
-
-    def new_log_like(self, nodes, weight, weight_values, means, jitters):
+    def log_likelihood(self, nodes, weight, weight_values, means, jitters):
         """ 
-            Calculates the marginal log likelihood for a GPRN. The main 
-        difference is that it sums the log likelihoods of each dataset instead 
-        of making a big covariance matrix K to calculate it.
+            Calculates the marginal log likelihood for a GPRN.
             See Rasmussen & Williams (2006), page 113.
             Parameters:
                 nodes = the node functions f(x) (f hat)
@@ -310,19 +271,10 @@ class gprn(object):
                 #except for the amplitude
                 weightPars[0] =  weight_values[j-1 + self.q*(i-1)]
                 #node and weight functions kernel
-                if isinstance(weight, (nodeL, nodeP, weightL, weightP)):
-                    #w_xa = type(self.weight)(*weightPars)(None, self.time[:,None], np.zeros(self.time.size))
-                    w_xa = self._kernel_matrix(type(self.weight)(*weightPars), self.time)
-                    f_hat = self._kernel_matrix(type(self.nodes[i - 1])(*nodePars), self.time)
-                    #w_xw = type(self.weight)(*weightPars)(None, np.zeros(self.time.size), self.time[None,:])
-                else:
-                    #w_xa = type(self.weight)(*weightPars)(self.time[:,None])
-                    w_xa = self._kernel_matrix(type(self.weight)(*weightPars), self.time)
-                    f_hat = self._kernel_matrix(type(self.nodes[j - 1])(*nodePars), self.time)
-                    #w_xw = type(self.weight)(*weightPars)(self.time[None,:])
-                    #w_xw =  1
+                w = self._kernel_matrix(type(self.weight)(*weightPars), self.time)
+                f_hat = self._kernel_matrix(type(self.nodes[j - 1])(*nodePars), self.time)
                 #now we add all the necessary stuff; eq. 4 of Wilson et al. (2012)
-                k_ii = k_ii + (w_xa * f_hat)# * w_xw)
+                k_ii = k_ii + (w_xa * f_hat)
             #k_ii = k_ii + diag(error) + diag(jitter)
             k_ii += (new_yyerr[i - 1]**2) * np.identity(self.time.size) \
                     + (jitters[i - 1]**2) * np.identity(self.time.size)
@@ -394,16 +346,10 @@ class gprn(object):
             #except for the amplitude
             weightPars[0] =  weight_values[i-1 + self.q*(dataset - 1)]
             #node and weight functions kernel
-            if isinstance(weight, (nodeL, nodeP, weightL, weightP)):
-                w_xa = type(self.weight)(*weightPars)(None, time[:,None], 0)
-                f_hat = self._predict_kernel_matrix(type(self.nodes[i - 1])(*nodePars),time)
-                w_xw = type(self.weight)(*weightPars)(None, 0, self.time[None,:])
-            else:
-                w_xa = type(self.weight)(*weightPars)(time[:,None])
-                f_hat = self._predict_kernel_matrix(type(self.nodes[i - 1])(*nodePars), time)
-                w_xw = type(self.weight)(*weightPars)(self.time[None,:])
+            w = self._kernel_matrix(type(self.weight)(*weightPars), time)
+            f_hat = self._predict_kernel_matrix(type(self.nodes[i - 1])(*nodePars), time)
             #now we add all the necessary stuff; eq. 4 of Wilson et al. (2012)
-            k_ii = k_ii + (w_xa * f_hat * w_xw)
+            k_ii = k_ii + (w_xa * f_hat)
 
 
         Kstar = k_ii
@@ -422,3 +368,5 @@ class gprn(object):
         y_std = np.sqrt(y_var) #standard deviation
         return y_mean, y_std, y_cov
 
+
+##### END

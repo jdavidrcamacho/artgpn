@@ -413,8 +413,7 @@ class RQP(nodeFunction):
         Definition of the product between the exponential sine squared kernel 
     and the rational quadratic kernel that we called RQP kernel.
         If I am thinking this correctly then this kernel should tend to the
-    QuasiPeriodic kernel as alpha increases, although I am not sure if we can
-    say that it tends to the QuasiPeriodic kernel as alpha tends to infinity.
+    QuasiPeriodic kernel as alpha increases, although I am not sure if its true.
         Parameters:
             ell_e and ell_p = aperiodic and periodic lenght scales
             alpha = alpha of the rational quadratic kernel
@@ -996,4 +995,4 @@ class dPolynomial_dwn(Polynomial):
             return np.zeros_like(r)
 
 
-### END
+##### END

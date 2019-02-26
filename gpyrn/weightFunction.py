@@ -928,4 +928,4 @@ class dPolynomial_dc(Polynomial):
                 * np.log(self.a * t1 * t2 + self.b)
 
 
-### END
+##### END
