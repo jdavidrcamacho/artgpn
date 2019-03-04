@@ -423,7 +423,7 @@ class RQP(nodeFunction):
     def __init__(self, alpha, ell_e, P, ell_p, wn):
         super(RQP, self).__init__(alpha, ell_e, P, ell_p, wn)
         self.alpha = alpha
-        self.RQP_ell_e = ell_e
+        self.ell_e = ell_e
         self.P = P
         self.ell_p = ell_p
         self.wn = wn
@@ -447,7 +447,7 @@ class dRQP_dalpha(RQP):
     def __init__(self, alpha, ell_e, P, ell_p, wn):
         super(dRQP_dalpha, self).__init__(alpha, ell_e, P, ell_p, wn)
         self.alpha = alpha
-        self.RQP_ell_e = ell_e
+        self.ell_e = ell_e
         self.P = P
         self.ell_p = ell_p
         self.wn = wn
@@ -466,7 +466,7 @@ class dRQP_delle(RQP):
     def __init__(self, alpha, ell_e, P, ell_p, wn):
         super(dRQP_delle, self).__init__(alpha, ell_e, P, ell_p, wn)
         self.alpha = alpha
-        self.RQP_ell_e = ell_e
+        self.ell_e = ell_e
         self.P = P
         self.ell_p = ell_p
         self.wn = wn
@@ -482,7 +482,7 @@ class dRQP_dP(RQP):
     def __init__(self, alpha, ell_e, P, ell_p, wn):
         super(dRQP_dP, self).__init__(alpha, ell_e, P, ell_p, wn)
         self.alpha = alpha
-        self.RQP_ell_e = ell_e
+        self.ell_e = ell_e
         self.P = P
         self.ell_p = ell_p
         self.wn = wn
@@ -499,7 +499,7 @@ class dRQP_dellp(RQP):
     def __init__(self, alpha, ell_e, P, ell_p, wn):
         super(dRQP_dellp, self).__init__(alpha, ell_e, P, ell_p, wn)
         self.alpha = alpha
-        self.RQP_ell_e = ell_e
+        self.ell_e = ell_e
         self.P = P
         self.ell_p = ell_p
         self.wn = wn
@@ -516,7 +516,7 @@ class dRQP_dwn(RQP):
     def __init__(self, alpha, ell_e, P, ell_p, wn):
         super(dRQP_dwn, self).__init__(alpha, ell_e, P, ell_p, wn)
         self.alpha = alpha
-        self.RQP_ell_e = ell_e
+        self.ell_e = ell_e
         self.P = P
         self.ell_p = ell_p
         self.wn = wn
