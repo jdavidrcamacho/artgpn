@@ -174,10 +174,10 @@ class Periodic(nodeFunction):
             P = period
             wn = white noise
     """
-    def __init__(self, ell, P, wn):
-        super(Periodic, self).__init__(ell, P, wn)
-        self.ell = ell
+    def __init__(self, P, ell, wn):
+        super(Periodic, self).__init__(P, ell, wn)
         self.P = P
+        self.ell = ell
         self.wn = wn
         self.type = 'non-stationary and isotropic'
         self.derivatives = 3    #number of derivatives in this kernel
@@ -194,10 +194,10 @@ class dPeriodic_dell(Periodic):
     """
         Log-derivative in order to ell
     """
-    def __init__(self, ell, P, wn):
-        super(dPeriodic_dell, self).__init__(ell, P, wn)
-        self.ell = ell
+    def __init__(self, P, ell,  wn):
+        super(dPeriodic_dell, self).__init__(P, ell,  wn)
         self.P = P
+        self.ell = ell
         self.wn = wn
 
     def __call__(self, r):
@@ -208,10 +208,10 @@ class dPeriodic_dP(Periodic):
     """
         Log-derivative in order to P
     """
-    def __init__(self, ell, P, wn):
-        super(dPeriodic_dP, self).__init__(ell, P, wn)
-        self.ell = ell
+    def __init__(self, P, ell, wn):
+        super(dPeriodic_dP, self).__init__(P, ell, wn)
         self.P = P
+        self.ell = ell
         self.wn = wn
 
     def __call__(self, r):
@@ -223,10 +223,10 @@ class dPeriodic_dwn(Periodic):
     """
         Log-derivative in order to wn
     """
-    def __init__(self, ell, P, wn):
-        super(dPeriodic_dwn, self).__init__(ell, P, wn)
-        self.ell = ell
+    def __init__(self, P, ell, wn):
+        super(dPeriodic_dwn, self).__init__(P, ell, wn)
         self.P = P
+        self.ell = ell
         self.wn = wn
 
     def __call__(self, r):

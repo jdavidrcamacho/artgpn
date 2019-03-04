@@ -173,11 +173,11 @@ class Periodic(weightFunction):
             ell = lenght scale
             P = period
     """
-    def __init__(self, weight, ell, P):
-        super(Periodic, self).__init__(weight, ell, P)
+    def __init__(self, weight, P, ell):
+        super(Periodic, self).__init__(weight, P, ell)
         self.weight = weight
-        self.ell = ell
         self.P = P
+        self.ell = ell
         self.type = 'non-stationary and isotropic'
         self.derivatives = 3    #number of derivatives in this kernel
         self.params_size = 3    #number of hyperparameters
@@ -189,11 +189,11 @@ class dPeriodic_dweight(Periodic):
     """
         Log-derivative in order to the weight
     """
-    def __init__(self, weight, ell, P):
-        super(dPeriodic_dweight, self).__init__(weight, ell, P)
+    def __init__(self, weight, P, ell):
+        super(dPeriodic_dweight, self).__init__(weight, P, ell)
         self.weight = weight
-        self.ell = ell
         self.P = P
+        self.ell = ell
 
     def __call__(self, r):
         return 2 * self.weight**2 * exp(-2 * sine(pi * np.abs(r) / self.P)**2 \
@@ -203,11 +203,11 @@ class dPeriodic_dell(Periodic):
     """
         Log-derivative in order to ell
     """
-    def __init__(self, weight, ell, P):
-        super(dPeriodic_dell, self).__init__(weight, ell, P)
+    def __init__(self, weight, P, ell,):
+        super(dPeriodic_dell, self).__init__(weight, P, ell)
         self.weight = weight
-        self.ell = ell
         self.P = P
+        self.ell = ell
 
     def __call__(self, r):
         return (4* self.weight**2 * sine(pi * np.abs(r) / self.P)**2 \
@@ -219,10 +219,10 @@ class dPeriodic_dP(Periodic):
         Log-derivative in order to P
     """
     def __init__(self, weight, ell, P):
-        super(dPeriodic_dP, self).__init__(weight, ell, P)
+        super(dPeriodic_dP, self).__init__(weight, P,  ell)
         self.weight = weight
-        self.ell = ell
         self.P = P
+        self.ell = ell
 
     def __call__(self, r):
         return (4 * pi * r * self.weight**2 \
