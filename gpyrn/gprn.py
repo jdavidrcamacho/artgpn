@@ -183,16 +183,10 @@ class network(object):
             #except for the amplitude
             weightPars[0] =  weight_values[i-1 + self.q*(position_p-1)]
             #node and weight functions kernel
-            if isinstance(weight, (nodeL, nodeP, weightL, weightP)):
-                w_xa = type(self.weight)(*weightPars)(None, time[:,None], np.zeros(time.size))
-                f_hat = self._kernel_matrix(type(self.nodes[i - 1])(*nodePars),time)
-                w_xw = type(self.weight)(*weightPars)(None, np.zeros(time.size), time[None,:])
-            else:
-                w_xa = type(self.weight)(*weightPars)(time[:,None])
-                f_hat = self._kernel_matrix(type(self.nodes[i - 1])(*nodePars),time)
-                w_xw = type(self.weight)(*weightPars)(time[None,:])
+            w = self._kernel_matrix(type(self.weight)(*weightPars), time)
+            f_hat = self._kernel_matrix(type(self.nodes[i - 1])(*nodePars),time)
             #now we add all the necessary stuff; eq. 4 of Wilson et al. (2012)
-            k_ii += w_xa * f_hat * w_xw 
+            k_ii += (w * f_hat)
         #adding measurement errors to our covariance matrix
         if add_errors:
             k_ii +=  (new_yyerr[position_p - 1]**2) * np.identity(time.size)
@@ -274,7 +268,7 @@ class network(object):
                 w = self._kernel_matrix(type(self.weight)(*weightPars), self.time)
                 f_hat = self._kernel_matrix(type(self.nodes[j - 1])(*nodePars), self.time)
                 #now we add all the necessary stuff; eq. 4 of Wilson et al. (2012)
-                k_ii = k_ii + (w_xa * f_hat)
+                k_ii = k_ii + (w * f_hat)
             #k_ii = k_ii + diag(error) + diag(jitter)
             k_ii += (new_yyerr[i - 1]**2) * np.identity(self.time.size) \
                     + (jitters[i - 1]**2) * np.identity(self.time.size)
@@ -290,10 +284,9 @@ class network(object):
 
 
 ##### GP prediction funtions
-    def predict_gp(self, nodes = None, weight = None, weight_values = None,
+    def prediction(self, nodes = None, weight = None, weight_values = None,
                    means = None, jitters= None, time = None, dataset = 1):
         """ 
-            NOTE: NOT WORKING PROPERLY
             Conditional predictive distribution of the Gaussian process
             Parameters:
                 time = values where the predictive distribution will be calculated
@@ -331,8 +324,8 @@ class network(object):
         #cov = k + diag(error) + diag(jitter)
         cov = self._covariance_matrix(nodes, weight, weight_values, 
                                       self.time, dataset, add_errors = False)
-        cov += (new_yerr[dataset - 1]) * np.identity(self.time.size) \
-                    + (self.jitters[dataset - 1]) * np.identity(self.time.size)
+        cov += (new_yerr[dataset - 1]**2) * np.identity(self.time.size) \
+                    + (self.jitters[dataset - 1]**2) * np.identity(self.time.size)
         L1 = cho_factor(cov)
         sol = cho_solve(L1, new_y[dataset - 1])
         tshape = time[:, None] - self.time[None, :]
@@ -346,10 +339,10 @@ class network(object):
             #except for the amplitude
             weightPars[0] =  weight_values[i-1 + self.q*(dataset - 1)]
             #node and weight functions kernel
-            w = self._kernel_matrix(type(self.weight)(*weightPars), time)
+            w = self._predict_kernel_matrix(type(self.weight)(*weightPars), time)
             f_hat = self._predict_kernel_matrix(type(self.nodes[i - 1])(*nodePars), time)
             #now we add all the necessary stuff; eq. 4 of Wilson et al. (2012)
-            k_ii = k_ii + (w_xa * f_hat)
+            k_ii = k_ii + (w * f_hat)
 
 
         Kstar = k_ii

@@ -106,7 +106,7 @@ def phase_folding(t, y, yerr, period):
 import dynesty, emcee
 from multiprocessing import Pool
 
-def run_mcmc(prior_func, loglike_func, iterations = 1000, sampler = 'emcee'):
+def run_mcmc(prior_func, loglike_func, iterations = 1000, sampler = 'emcee', threads = 4):
     """
         run_mcmc() allow the user to run emcee or dynesty automatically
         Parameters:
@@ -115,6 +115,7 @@ def run_mcmc(prior_func, loglike_func, iterations = 1000, sampler = 'emcee'):
             iterations = number of iterations; in emcee half of it will be used
                         as burn-in
             sampler = 'emcee' or 'dynesty'
+            threads = number of threads for parallel running
         Returns:
             result = return the sampler's results accordingly to the sampler
     """
@@ -124,7 +125,7 @@ def run_mcmc(prior_func, loglike_func, iterations = 1000, sampler = 'emcee'):
         #defining emcee properties
         nwalkers = 2*ndim
         sampler = emcee.EnsembleSampler(nwalkers, ndim, 
-                                        loglike_func, threads= 4)
+                                        loglike_func, threads= threads)
         
         #Initialize the walkers
         p0=[prior_func() for i in range(nwalkers)]
@@ -139,7 +140,7 @@ def run_mcmc(prior_func, loglike_func, iterations = 1000, sampler = 'emcee'):
         ndim = prior_func(0).size
         dsampler = dynesty.DynamicNestedSampler(loglike_func, prior_func, ndim=ndim, 
                                         nlive = 1000, sample='rwalk',
-                                        queue_size=4, pool=Pool(4))
+                                        queue_size=threads, pool=Pool(threads))
         dsampler.run_nested(nlive_init = 1000, maxiter = iterations)
         results = dsampler.results
     return results
