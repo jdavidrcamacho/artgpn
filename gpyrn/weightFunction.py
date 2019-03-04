@@ -407,7 +407,7 @@ class RQP(weightFunction):
         super(RQP, self).__init__(weight, alpha, ell_e, P, ell_p)
         self.weight = weight
         self.alpha = alpha
-        self.RQP_ell_e = ell_e
+        self.ell_e = ell_e
         self.P = P
         self.ell_p = ell_p
         self.type = 'non-stationary and anisotropic'
@@ -427,7 +427,7 @@ class dRQP_dweight(RQP):
         super(dRQP_dweight, self).__init__(weight, alpha, ell_e, P, ell_p)
         self.weight = weight
         self.alpha = alpha
-        self.RQP_ell_e = ell_e
+        self.ell_e = ell_e
         self.P = P
         self.ell_p = ell_p
 
@@ -444,7 +444,7 @@ class dRQP_dalpha(RQP):
         super(dRQP_dalpha, self).__init__(weight, alpha, ell_e, P, ell_p)
         self.weight = weight
         self.alpha = alpha
-        self.RQP_ell_e = ell_e
+        self.ell_e = ell_e
         self.P = P
         self.ell_p = ell_p
 
@@ -463,7 +463,7 @@ class dRQP_delle(RQP):
         super(dRQP_delle, self).__init__(weight, alpha, ell_e, P, ell_p)
         self.weight = weight
         self.alpha = alpha
-        self.RQP_ell_e = ell_e
+        self.ell_e = ell_e
         self.P = P
         self.ell_p = ell_p
 
@@ -480,7 +480,7 @@ class dRQP_dP(RQP):
         super(dRQP_dP, self).__init__(weight, alpha, ell_e, P, ell_p)
         self.weight = weight
         self.alpha = alpha
-        self.RQP_ell_e = ell_e
+        self.ell_e = ell_e
         self.P = P
         self.ell_p = ell_p
 
@@ -497,7 +497,7 @@ class dRQP_dellp(RQP):
         super(dRQP_dellp, self).__init__(weight, alpha, ell_e, P, ell_p)
         self.weight = weight
         self.alpha = alpha
-        self.RQP_ell_e = ell_e
+        self.ell_e = ell_e
         self.P = P
         self.ell_p = ell_p
 
