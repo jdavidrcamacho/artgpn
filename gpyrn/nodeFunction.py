@@ -117,7 +117,6 @@ class SquaredExponential(nodeFunction):
         Squared Exponential kernel, also known as radial basis function or RBF 
     kernel in other works.
         Parameters:
-            theta = amplitude
             ell = length-scale
             wn = white noise
     """
@@ -169,7 +168,6 @@ class Periodic(nodeFunction):
     """
         Definition of the periodic kernel.
         Parameters:
-            theta = amplitude
             ell = lenght scale
             P = period
             wn = white noise
