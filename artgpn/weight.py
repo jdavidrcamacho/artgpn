@@ -6,7 +6,7 @@ pi, exp, sine, cosine, sqrt = np.pi, np.exp, np.sin, np.cos, np.sqrt
 
 class weightFunction(object):
     """
-        Definition the weight functions (kernels) of our GPRN.
+        Definition the weight functions kernels of our network.
         Kernels not fully implemented yet:
             Matern32, and Matern52
     """

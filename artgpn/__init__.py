@@ -6,11 +6,11 @@
 """
 
 #weight functions
-from artgpn import weightFunction
+from artgpn import weight
 #node functions
-from artgpn import nodeFunction
+from artgpn import node
 #mean functions
-from artgpn import meanFunction
+from artgpn import mean
 #network
 from artgpn import art
 

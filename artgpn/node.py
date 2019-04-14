@@ -6,7 +6,7 @@ pi, exp, sine, cosine, sqrt = np.pi, np.exp, np.sin, np.cos, np.sqrt
 
 class nodeFunction(object):
     """
-        Definition the node functions (kernels) of our GPRN, by default and 
+        Definition the node functions kernels of our network, by default and 
     because it simplifies my life, all kernels include a white noise term
     """
     def __init__(self, *args):

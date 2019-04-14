@@ -12,13 +12,10 @@ from artgpn.weightFunction import Polynomial as weightP
 
 class network(object):
     """ 
-        Class to create our Gaussian process regression network. See Wilson et
-    al. (2012) for more information on this framework.
+        Class to create our Artifical Gaussian Process Network.
         Parameters:
-            nodes = latent noide functions f(x), f hat in the article
-            weight = latent weight funtion w(x), as far as I understood
-                            this is the same kernels for all nodes except for 
-                            the "amplitude" that varies from node to node
+            nodes = node functions used
+            weight = weight funtion used
             weight_values = array with the weight w11, w12, etc... size needs to 
                         be equal to the number of nodes times the number of 
                         components (self.q * self.p)
@@ -31,11 +28,11 @@ class network(object):
     """ 
     def  __init__(self, nodes, weight, weight_values, means, jitters, time, 
                   *args):
-        #node functions; f(x) in Wilson et al. (2012)
+        #node functions
         self.nodes = np.array(nodes)
-        #number of nodes being used; q in Wilson et al. (2012)
+        #number of nodes being used
         self.q = len(self.nodes)
-        #weight function; w(x) in Wilson et al. (2012)
+        #weight function
         self.weight = weight
         #amplitudes of the weight function
         self.weight_values = np.array(weight_values)
@@ -47,7 +44,7 @@ class network(object):
         self.time = time 
         #the data, it should be given as data1, data1_error, data2, ...
         self.args = args 
-        #number of components of y(x); p in Wilson et al. (2012)
+        #number of components of y(x)
         self.p = int(len(self.args)/2)
         #total number of weights we will have
         self.qp =  self.q * self.p
@@ -160,8 +157,8 @@ class network(object):
         """ 
             Creates the smaller matrices that will be used in a big final matrix
             Parameters:
-                node = the node functions f(x) (f hat)
-                weight = the weight funtion w(x)
+                node = the node functions
+                weight = the weight funtion
                 weight_values = array with the weights of w11, w12, etc... 
                 time = time 
                 position_p = position necessary to use the correct node
@@ -185,7 +182,7 @@ class network(object):
             #node and weight functions kernel
             w = self._kernel_matrix(type(self.weight)(*weightPars), time)
             f_hat = self._kernel_matrix(type(self.nodes[i - 1])(*nodePars),time)
-            #now we add all the necessary stuff; eq. 4 of Wilson et al. (2012)
+            #now we add all the necessary stuff
             k_ii += (w * f_hat)
         #adding measurement errors to our covariance matrix
         if add_errors:
@@ -199,8 +196,8 @@ class network(object):
             Creates the big covariance matrix K that will be used in the 
         log marginal likelihood calculation
             Parameters:
-                nodes = the latent noide functions f(x) (f hat)
-                weight = the latent weight function w(x)
+                nodes = node functions 
+                weight = weight function
                 weight_values = array with the weights of w11, w12, etc...
                 time = time  
                 nugget = True if K is not positive definite, False otherwise
@@ -234,11 +231,11 @@ class network(object):
 
     def log_likelihood(self, nodes, weight, weight_values, means, jitters):
         """ 
-            Calculates the marginal log likelihood for a GPRN.
-            See Rasmussen & Williams (2006), page 113.
+            Calculates the marginal log likelihood of our network. 
+        See Rasmussen & Williams (2006), page 113.
             Parameters:
-                nodes = the node functions f(x) (f hat)
-                weight = the weight funtion w(x)
+                nodes = the node functions 
+                weight = the weight funtion
                 weight_values = array with the weights of w11, w12, etc... 
                 means = mean function being used
                 jitters = jitter value of each dataset
@@ -267,7 +264,7 @@ class network(object):
                 #node and weight functions kernel
                 w = self._kernel_matrix(type(self.weight)(*weightPars), self.time)
                 f_hat = self._kernel_matrix(type(self.nodes[j - 1])(*nodePars), self.time)
-                #now we add all the necessary stuff; eq. 4 of Wilson et al. (2012)
+                #now we add all the necessary stuff
                 k_ii = k_ii + (w * f_hat)
             #k_ii = k_ii + diag(error) + diag(jitter)
             k_ii += (new_yyerr[i - 1]**2) * np.identity(self.time.size) \
@@ -290,8 +287,8 @@ class network(object):
             Conditional predictive distribution of the Gaussian process
             Parameters:
                 time = values where the predictive distribution will be calculated
-                nodes = the node functions f(x) (f hat)
-                weight = the weight function w(x)
+                nodes = the node functions
+                weight = the weight function 
                 weight_values = array with the weights of w11, w12, etc...
                 means = list of means being used
                 jitters = jitter of each dataset
@@ -341,7 +338,7 @@ class network(object):
             #node and weight functions kernel
             w = self._predict_kernel_matrix(type(self.weight)(*weightPars), time)
             f_hat = self._predict_kernel_matrix(type(self.nodes[i - 1])(*nodePars), time)
-            #now we add all the necessary stuff; eq. 4 of Wilson et al. (2012)
+            #now we add all the necessary stuff
             k_ii = k_ii + (w * f_hat)
 
 
