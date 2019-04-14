@@ -6,13 +6,13 @@
 """
 
 #weight functions
-from gpyrn import weightFunction
+from artgpn import weightFunction
 #node functions
-from gpyrn import nodeFunction
+from artgpn import nodeFunction
 #mean functions
-from gpyrn import meanFunction
-#gp regression network
-from gpyrn import gprn
+from artgpn import meanFunction
+#network
+from artgpn import art
 
 #util functions
-from gpyrn import utils
+from artgpn import utils

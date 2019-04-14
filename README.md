@@ -1,10 +1,10 @@
-# gpyrn
+# artGPN
 
 
 -------------------------
 
 
-Creation of a Gaussian processes regression network using python
+Creation of a Artificial Gaussian Processes Network using python
 
 
 To install just type
@@ -14,7 +14,7 @@ To install just type
 
 And you can imported it in python with just
 
-    import gpyrn
+    import artgpn
 
 
 

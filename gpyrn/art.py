@@ -4,10 +4,10 @@ import numpy as np
 from scipy.linalg import cho_factor, cho_solve, LinAlgError
 from copy import copy
 
-from gpyrn.nodeFunction import Linear as nodeL
-from gpyrn.nodeFunction import Polynomial as nodeP
-from gpyrn.weightFunction import Linear as weightL
-from gpyrn.weightFunction import Polynomial as weightP
+from artgpn.nodeFunction import Linear as nodeL
+from artgpn.nodeFunction import Polynomial as nodeP
+from artgpn.weightFunction import Linear as weightL
+from artgpn.weightFunction import Polynomial as weightP
 
 
 class network(object):

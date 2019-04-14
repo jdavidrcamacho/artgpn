@@ -2,14 +2,14 @@
 # -*- coding: utf-8 -*-
 from setuptools import setup
 
-setup(name='gpyrn',
+setup(name='artgpn',
       version='0.5',
-      description='Implementation of a Gaussian processes regression network',
+      description='Implementation of a ARTificial Gaussian Processes Network',
       author='João Camacho',
       author_email='joao.camacho@astro.up.pt',
       license='MIT',
-      url='https://github.com/jdavidrcamacho/gpyrn',
-      packages=['gpyrn'],
+      url='https://github.com/jdavidrcamacho/artgpn',
+      packages=['artgpn'],
       install_requires=[
         'numpy',
         'scipy',
