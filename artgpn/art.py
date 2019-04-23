@@ -4,10 +4,10 @@ import numpy as np
 from scipy.linalg import cho_factor, cho_solve, LinAlgError
 from copy import copy
 
-from artgpn.nodeFunction import Linear as nodeL
-from artgpn.nodeFunction import Polynomial as nodeP
-from artgpn.weightFunction import Linear as weightL
-from artgpn.weightFunction import Polynomial as weightP
+from artgpn.node import Linear as nodeL
+from artgpn.node import Polynomial as nodeP
+from artgpn.weight import Linear as weightL
+from artgpn.weight import Polynomial as weightP
 
 
 class network(object):
@@ -26,8 +26,7 @@ class network(object):
             *args = the data (or components), it needs be given in order of
                 data1, data1_error, data2, data2_error, etc...
     """ 
-    def  __init__(self, nodes, weight, weight_values, means, jitters, time, 
-                  *args):
+    def  __init__(self, nodes, weight, weight_values, means, jitters, time, *args):
         #node functions
         self.nodes = np.array(nodes)
         #number of nodes being used
@@ -187,7 +186,6 @@ class network(object):
         #adding measurement errors to our covariance matrix
         if add_errors:
             k_ii +=  (new_yyerr[position_p - 1]**2) * np.identity(time.size)
-
         return k_ii
 
     def compute_matrix(self, nodes, weight, weight_values,time, 
@@ -229,7 +227,7 @@ class network(object):
         return K
 
 
-    def log_likelihood(self, nodes, weight, weight_values, means, jitters):
+    def log_likelihood(self, nodes, weights, weight_values, means, jitters):
         """ 
             Calculates the marginal log likelihood of our network. 
         See Rasmussen & Williams (2006), page 113.
@@ -258,7 +256,7 @@ class network(object):
                 #hyperparameteres of the kernel of a given position
                 nodePars = self._kernel_pars(nodes[j - 1])
                 #all weight function will have the same parameters
-                weightPars = weight.pars
+                weightPars = self._kernel_pars(weights)
                 #except for the amplitude
                 weightPars[0] =  weight_values[j-1 + self.q*(i-1)]
                 #node and weight functions kernel
@@ -280,7 +278,7 @@ class network(object):
         return log_like
 
 
-##### GP prediction funtions
+##### GP prediction functions
     def prediction(self, nodes = None, weight = None, weight_values = None,
                    means = None, jitters= None, time = None, dataset = 1):
         """ 
@@ -340,7 +338,6 @@ class network(object):
             f_hat = self._predict_kernel_matrix(type(self.nodes[i - 1])(*nodePars), time)
             #now we add all the necessary stuff
             k_ii = k_ii + (w * f_hat)
-
 
         Kstar = k_ii
         Kstarstar = self._covariance_matrix(nodes, weight, weight_values, time, 

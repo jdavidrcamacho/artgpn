@@ -135,7 +135,9 @@ def run_mcmc(prior_func, loglike_func, iterations = 1000, sampler = 'emcee', thr
         print("Running production chain")
         sampler.run_mcmc(p0, runs)
         #preparing samples to return
-        results = sampler.chain[:, burns:, :].reshape((-1, ndim))
+        samples = sampler.chain[:, burns:, :].reshape((-1, ndim))
+        lnprob = sampler.lnprobability[:, burns:].reshape(nwalkers*burns, 1)
+        results = np.vstack([samples.T,np.array(lnprob).T]).T
     if sampler == 'dynesty':
         ndim = prior_func(0).size
         dsampler = dynesty.DynamicNestedSampler(loglike_func, prior_func, ndim=ndim, 
