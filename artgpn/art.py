@@ -344,7 +344,7 @@ class network(object):
         Kstarstar += (jitters[dataset - 1]**2) * np.identity(time.size)
 
         new_mean = np.array_split(self._mean(means, time), self.p)
-        y_mean = np.dot(Kstar, sol) + new_mean[dataset-1]#mean
+        y_mean = np.dot(Kstar, sol) + new_mean[dataset-1] #mean
 
         kstarT_k_kstar = []
         for i, e in enumerate(time):

@@ -102,6 +102,20 @@ def phase_folding(t, y, yerr, period):
     return phase, folded_y, folded_yerr
 
 
+##### Standardization of the data ##############################################
+def scale(y, yerr):
+    """ 
+        Standardization of a given dataset y
+        Parameters:
+            y = data; subtract mean, divide by std 
+            yerr = errors; divide by std of x
+        Returns:
+            standardized y and yerr 
+    """
+    m, s = y.mean(), y.std()
+    return (y-m)/s, yerr/s
+
+
 ##### MCMC with dynesty or emcee ###############################################
 import dynesty, emcee
 from multiprocessing import Pool
