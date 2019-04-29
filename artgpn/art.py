@@ -333,7 +333,7 @@ class network(object):
             #except for the amplitude
             weightPars[0] =  weights_values[i-1 + self.q*(dataset - 1)]
             #node and weight functions kernel
-            w = self._predict_kernel_matrix(type(self.weight)(*weightPars), time)
+            w = self._predict_kernel_matrix(type(self.weights)(*weightPars), time)
             f_hat = self._predict_kernel_matrix(type(self.nodes[i - 1])(*nodePars), time)
             #now we add all the necessary stuff
             k_ii = k_ii + (w * f_hat)
