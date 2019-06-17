@@ -119,7 +119,7 @@ class network(object):
         pars = list(pars)
         assert len(pars) == self.mean_pars_size
         self._mean_pars = copy(pars)
-        for i, m in enumerate(self.means):
+        for _, m in enumerate(self.means):
             if m is None: 
                 continue
             j = 0
@@ -347,7 +347,7 @@ class network(object):
         y_mean = np.dot(Kstar, sol) + new_mean[dataset-1] #mean
 
         kstarT_k_kstar = []
-        for i, e in enumerate(time):
+        for i, _ in enumerate(time):
             kstarT_k_kstar.append(np.dot(Kstar, cho_solve(L1, Kstar[i,:])))
         y_cov = Kstarstar - kstarT_k_kstar
         y_var = np.diag(y_cov) #variance

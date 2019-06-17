@@ -71,7 +71,7 @@ class dConstant_dwn(Constant):
         Log-derivative in order to the white noise
     """
     def __init__(self, c, wn):
-        super(dConstant_dc, self).__init__(c, wn)
+        super(dConstant_dwn, self).__init__(c, wn)
         self.c = c
         self.wn = wn
 
@@ -228,7 +228,6 @@ class dPeriodic_dwn(Periodic):
         self.wn = wn
 
     def __call__(self, r):
-        return
         try:
             return 2 * self.wn**2 * np.diag(np.diag(np.ones_like(r)))
         except ValueError:
@@ -588,7 +587,7 @@ class Laplacian(nodeFunction):
     def __init__(self, ell, wn):
         super(Laplacian, self).__init__(ell, wn)
         self.ell = ell
-        self.wn
+        self.wn = wn
         self.type = 'stationary and isotropic'
         self.derivatives = 2    #number of derivatives in this kernel
         self.params_size = 2    #number of hyperparameters
@@ -617,7 +616,7 @@ class dLaplacian_dwn(Laplacian):
         Log-derivative in order to the white noise
     """
     def __init__(self, ell, wn):
-        super(dLaplacian_dell, self).__init__(ell, wn)
+        super(dLaplacian_dwn, self).__init__(ell, wn)
         self.ell = ell
         self.wn = wn
 
@@ -638,7 +637,7 @@ class Exponential(nodeFunction):
     def __init__(self, ell, wn):
         super(Exponential, self).__init__(ell, wn)
         self.ell = ell
-        self.wn
+        self.wn = wn
         self.type = 'stationary and isotropic'
         self.derivatives = 2    #number of derivatives in this kernel
         self.params_size = 2    #number of hyperparameters
@@ -667,7 +666,7 @@ class dExpoential_dwn(Exponential):
         Log-derivative in order to the white noise
     """
     def __init__(self, ell, wn):
-        super(dExpoential_dell, self).__init__(ell, wn)
+        super(dExpoential_dwn, self).__init__(ell, wn)
         self.ell = ell
         self.wn = wn
 
@@ -687,6 +686,7 @@ class Matern32(nodeFunction):
     def __init__(self, ell, wn):
         super(Matern32, self).__init__(ell, wn)
         self.ell = ell
+        self.wn = wn
         self.type = 'stationary and isotropic'
         self.derivatives = 2    #number of derivatives in this kernel
         self.params_size = 2    #number of hyperparameters
