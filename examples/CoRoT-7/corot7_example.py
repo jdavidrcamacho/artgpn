@@ -60,13 +60,12 @@ print(loglike)
 
 #Now that we have a network we can run a MCMC to optimize our parameters
 #We will start with creating our priors 
-
-#node function
+#node function priors
 eta3_1 = stats.uniform(10, 40 -10)
 eta4_1 = stats.uniform(0, 5 -0)
 s = stats.uniform(0, 2 -0)
 
-#weight function
+#weight function priors
 eta2 = stats.uniform(np.ediff1d(time).mean(), 2*time.ptp() -np.ediff1d(time).mean())
 #weight function amplitude for the RVs
 w11 = stats.uniform(0, 5*val1.ptp() -0)
@@ -81,21 +80,20 @@ w32 = stats.uniform(0, 5*val3.ptp() -0)
 w41 = stats.uniform(0, 5*val4.ptp() -0)
 w42 = stats.uniform(0, 5*val4.ptp() -0)
 
-#mean functions
+#mean functions priors
 mean_c1 = stats.uniform(5*val1.min(), 5*val1.max() -5*val1.min())
 mean_c2 = stats.uniform(5*val2.min(), 5*val2.max() -5*val2.min())
 mean_c3 = stats.uniform(5*val3.min(), 5*val3.max() -5*val3.min())
 mean_c4 = stats.uniform(5*val4.min(), 5*val4.max() -5*val4.min())
 
-#jitters
+#jitters priors
 jitt1 = stats.uniform(0, 2*val1.std() -0)
 jitt2 = stats.uniform(0, 2*val2.std() -0)
 jitt3 = stats.uniform(0, 2*val3.std() -0)
 jitt4 = stats.uniform(0, 2*val4.std() -0)
 
 
-#The MCMC we will use is called emcee and required to functions
-
+#The MCMC we will use is called emcee and required two functions
 #prior_transform calls our priors
 def prior_transform():
     return np.array([eta2.rvs(), eta3_1.rvs(), eta4_1.rvs(), s.rvs(), \
@@ -118,7 +116,7 @@ def log_transform(theta):
 
     new_nodes = [node.Periodic(n31, n41, s1)]
     
-    #notice that our new_weights has an amplitude of 1
+    #notice that our new_weights has an amplitude of "1.0"
     #This is because the amplitudes are defines separately
     new_weights = [weight.SquaredExponential(1.0, n2)]
     
@@ -138,8 +136,7 @@ samples = utils.run_mcmc(prior_transform, log_transform, iterations = 10000,
 
 #When our MCMC is finished we can check the results
 #Of the 10000 iterations, 5000 are burn-ins
-
-#We need to calculate median and quantiles and then print them
+#We then need to calculate median and quantiles and then print them
 n2, n31, n41, s, w11, w21, w31, w41, \
 c1,c2,c3,c4, j1,j2,j3,j4, logl = map(lambda v: (v[1], v[2]-v[1], v[1]-v[0]),
                              zip(*np.percentile(samples, [16, 50, 84],axis=0)))
@@ -165,7 +162,7 @@ print('BIS jitter = {0[0]} +{0[1]} -{0[2]}'.format(j3))
 print('Rhk jitter = {0[0]} +{0[1]} -{0[2]}'.format(j4))
 print()
 
-#We can also make a corner plot of the solution
+#We can also make a corner plot of our solution
 corner.corner(samples, labels=["eta2", "eta3_1", "eta4_1", "s", "w11", "w21", 
                                "w31", "w41", "RV offset", "FWHM offset", 
                                "BIS offset", "Rhk offset", "RV jitter", 
@@ -174,7 +171,7 @@ corner.corner(samples, labels=["eta2", "eta3_1", "eta4_1", "s", "w11", "w21",
               show_titles=True, plot_contours = True, 
               plot_density = True, plot_points = False)
 
-#Having got a solution from our MCMC we can redifine all the network
+#Having a solution from our MCMC we need to redefine all the network
 nodes = [node.Periodic(n31[0], n41[0], s[0])]
 weights = [weight.SquaredExponential(1.0, n2[0])]
 weights_values = [w11[0], w21[0], w31[0], w41[0]]
