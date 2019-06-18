@@ -32,7 +32,7 @@ class network(object):
         #number of nodes being used
         self.q = len(self.nodes)
         #weight function
-        self.weights = weights
+        self.weights = np.array(weights)
         #amplitudes of the weight function
         self.weights_values = np.array(weights_values)
         #mean functions
@@ -179,7 +179,7 @@ class network(object):
             #except for the amplitude
             weightPars[0] =  weight_values[i-1 + self.q*(position_p-1)]
             #node and weight functions kernel
-            w = self._kernel_matrix(type(self.weights)(*weightPars), time)
+            w = self._kernel_matrix(type(self.weights[0])(*weightPars), time)
             f_hat = self._kernel_matrix(type(self.nodes[i - 1])(*nodePars),time)
             #now we add all the necessary stuff
             k_ii += (w * f_hat)
@@ -255,11 +255,11 @@ class network(object):
                 #hyperparameteres of the kernel of a given position
                 nodePars = self._kernel_pars(nodes[j - 1])
                 #all weight function will have the same parameters
-                weightPars = self._kernel_pars(weights)
+                weightPars = self._kernel_pars(weights[0])
                 #except for the amplitude
                 weightPars[0] =  weights_values[j-1 + self.q*(i-1)]
                 #node and weight functions kernel
-                w = self._kernel_matrix(type(self.weights)(*weightPars), self.time)
+                w = self._kernel_matrix(type(self.weights[0])(*weightPars), self.time)
                 f_hat = self._kernel_matrix(type(self.nodes[j - 1])(*nodePars), self.time)
                 #now we add all the necessary stuff
                 k_ii = k_ii + (w * f_hat)
@@ -316,7 +316,7 @@ class network(object):
         new_yerr = np.array_split(yy_err, self.p)
 
         #cov = k + diag(error) + diag(jitter)
-        cov = self._covariance_matrix(nodes, weights, weights_values, 
+        cov = self._covariance_matrix(nodes, weights[0], weights_values, 
                                       self.time, dataset, add_errors = False)
         cov += (new_yerr[dataset - 1]**2) * np.identity(self.time.size) \
                     + (self.jitters[dataset - 1]**2) * np.identity(self.time.size)
@@ -329,17 +329,17 @@ class network(object):
             #hyperparameteres of the kernel of a given position
             nodePars = self._kernel_pars(nodes[i - 1])
             #all weight function will have the same parameters
-            weightPars = self._kernel_pars(weights)
+            weightPars = self._kernel_pars(weights[0])
             #except for the amplitude
             weightPars[0] =  weights_values[i-1 + self.q*(dataset - 1)]
             #node and weight functions kernel
-            w = self._predict_kernel_matrix(type(self.weights)(*weightPars), time)
+            w = self._predict_kernel_matrix(type(self.weights[0])(*weightPars), time)
             f_hat = self._predict_kernel_matrix(type(self.nodes[i - 1])(*nodePars), time)
             #now we add all the necessary stuff
             k_ii = k_ii + (w * f_hat)
 
         Kstar = k_ii
-        Kstarstar = self._covariance_matrix(nodes, weights, weights_values, time, 
+        Kstarstar = self._covariance_matrix(nodes, weights[0], weights_values, time, 
                                             dataset, add_errors = False)
         Kstarstar += (jitters[dataset - 1]**2) * np.identity(time.size)
 

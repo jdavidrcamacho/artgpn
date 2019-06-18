@@ -37,7 +37,7 @@ val4 /= val4.std()
 #Having the data we now choose our nodes and weights
 #A Periodic kernel for a node and a Squared Exponential kernel as weight
 nodes = [node.Periodic(20, 0.5, 0.0)] 
-weights = [weight.SquaredExponential(1.0, 20)] 
+weights = [weight.SquaredExponential(1.0, 20)]
 #Due the way its implemented we need to give amplitudes separately to our weights
 weight_amplitudes = [1.0, 1.0, 1.0, 1.0]
 
@@ -133,7 +133,7 @@ def log_transform(theta):
                                            new_jitters)
     
 #In the utils we have a function to run our MCMC that can be defined as
-samples = utils.run_mcmc(prior_transform, loglike, iterations = 10000, 
+samples = utils.run_mcmc(prior_transform, log_transform, iterations = 10000, 
                          sampler = 'emcee')
 
 #When our MCMC is finished we can check the results
@@ -176,7 +176,7 @@ corner.corner(samples, labels=["eta2", "eta3_1", "eta4_1", "s", "w11", "w21",
 
 #Having got a solution from our MCMC we can redifine all the network
 nodes = [node.Periodic(n31[0], n41[0], s[0])]
-weights = weight.SquaredExponential(1.0, n2[0])
+weights = [weight.SquaredExponential(1.0, n2[0])]
 weights_values = [w11[0], w21[0], w31[0], w41[0]]
 means = [mean.Constant(c1[0]), mean.Constant(c2[0]),
          mean.Constant(c3[0]), mean.Constant(c4[0])]
