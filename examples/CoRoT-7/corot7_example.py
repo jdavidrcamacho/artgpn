@@ -232,3 +232,4 @@ ax4.fill_between(np.linspace(time.min()-extention, time.max()+extention, 5000),
 ax4.plot(np.linspace(time.min()-extention, time.max()+extention, 5000), mu44, "k--", alpha=1, lw=1.5)
 ax4.errorbar(time,val4, val4err, fmt = "b.")
 ax4.set_ylabel("Rhk")
+plt.show()
