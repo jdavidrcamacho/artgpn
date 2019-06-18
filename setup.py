@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(name='artgpn',
       version='0.5',
-      description='Implementation of a ARTificial Gaussian Processes Network',
+      description='Implementation of a ARTificial Gaussian Processes Network in python3x',
       author='João Camacho',
       author_email='joao.camacho@astro.up.pt',
       license='MIT',
