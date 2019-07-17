@@ -155,9 +155,9 @@ def run_mcmc(prior_func, loglike_func, iterations = 1000, sampler = 'emcee', thr
     if sampler == 'dynesty':
         ndim = prior_func(0).size
         dsampler = dynesty.DynamicNestedSampler(loglike_func, prior_func, ndim=ndim, 
-                                        nlive = 1000, sample='rwalk',
+                                        nlive = 2500, sample='rwalk',
                                         queue_size=threads, pool=Pool(threads))
-        dsampler.run_nested(nlive_init = 1000, maxiter = iterations)
+        dsampler.run_nested(nlive_init = 2500, maxiter = iterations)
         results = dsampler.results
     return results
 
