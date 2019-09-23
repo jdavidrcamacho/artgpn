@@ -14,19 +14,21 @@ class network(object):
     """ 
         Class to create our Artifical Gaussian Process Network.
         Parameters:
-            nodes = node functions used
-            weights = weight funtion used
+            nodes = node functions
+            weights = weight funtion 
             weights_values = array with the weight w11, w12, etc... size needs to 
                         be equal to the number of nodes times the number of 
                         components (self.q * self.p)
-            means = array of means functions being used, set it to None if a 
-                    model doesn't use it
+            activations = activation functions 
+            means = array of means functions, set it to None if a model doesn't 
+                use it in a given component
             jitters = jitter value of each dataset
             time = time
             *args = the data (or components), it needs be given in order of
                 data1, data1_error, data2, data2_error, etc...
     """ 
-    def  __init__(self, nodes, weights, weights_values, means, jitters, time, *args):
+    def  __init__(self, nodes, weights, weights_values, activations,
+                  means, jitters, time, *args):
         #node functions
         self.nodes = np.array(nodes)
         #number of nodes being used
@@ -35,6 +37,8 @@ class network(object):
         self.weights = np.array(weights)
         #amplitudes of the weight function
         self.weights_values = np.array(weights_values)
+        #activation functions
+        self.activations = np.array([activations])
         #mean functions
         self.means = np.array(means)
         #jitters
@@ -61,9 +65,11 @@ class network(object):
         self.yerr = np.array(self.yerr) #"extended" errors
         #check if the input was correct
         assert self.means.size == self.p, \
-        'The numbers of means should be equal to the number of components'
+        'Numbes of mean functions and number of components dont match'
+        assert self.activations.size == self.weights_values.size, \
+        'Number of activation functions and weights dont match'
         assert (i+1)/2 == self.p, \
-        'Given data and number of components dont match'
+        'Data and number of components dont match'
 
     def _kernel_matrix(self, kernel, time = None):
         """
@@ -226,7 +232,8 @@ class network(object):
             K = K + shift*np.identity(self.time.size * self.p)
         return K
 
-    def log_likelihood(self, nodes, weights, weights_values, means, jitters):
+    def log_likelihood(self, nodes, weights, weights_values, activations,
+                       means, jitters):
         """ 
             Calculates the marginal log likelihood of our network. 
         See Rasmussen & Williams (2006), page 113.
@@ -252,17 +259,21 @@ class network(object):
         for i in range(1, self.p+1):
             k_ii = np.zeros((self.time.size, self.time.size))
             for j in range(1,self.q + 1):
-                #hyperparameteres of the kernel of a given position
-                nodePars = self._kernel_pars(nodes[j - 1])
-                #all weight function will have the same parameters
-                weightPars = self._kernel_pars(weights[0])
-                #except for the amplitude
-                weightPars[0] =  weights_values[j-1 + self.q*(i-1)]
-                #node and weight functions kernel
-                w = self._kernel_matrix(type(self.weights[0])(*weightPars), self.time)
-                f_hat = self._kernel_matrix(type(self.nodes[j - 1])(*nodePars), self.time)
-                #now we add all the necessary stuff
-                k_ii = k_ii + (w * f_hat)
+                active = activations[j-1 + self.q*(i-1)]
+                if active == 0:
+                    k_ii = k_ii
+                else:
+                    #hyperparameteres of the kernel of a given position
+                    nodePars = self._kernel_pars(nodes[j - 1])
+                    #all weight function will have the same parameters
+                    weightPars = self._kernel_pars(weights[0])
+                    #except for the amplitude
+                    weightPars[0] =  weights_values[j-1 + self.q*(i-1)]
+                    #node and weight functions kernel
+                    w = self._kernel_matrix(type(self.weights[0])(*weightPars), self.time)
+                    f_hat = self._kernel_matrix(type(self.nodes[j - 1])(*nodePars), self.time)
+                    #now we add all the necessary stuff
+                    k_ii = k_ii + (w * f_hat)
             #k_ii = k_ii + diag(error) + diag(jitter)
             k_ii += (new_yyerr[i - 1]**2) * np.identity(self.time.size) \
                     + (jitters[i - 1]**2) * np.identity(self.time.size)
