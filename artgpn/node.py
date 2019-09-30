@@ -21,6 +21,7 @@ class nodeFunction(object):
             Not sure if this is a good approach since will make our life harder 
         when defining certain non-stationary kernels, e.g linear kernel.
         """
+        print('call r', r.shape)
         raise NotImplementedError
 
     def __repr__(self):
@@ -48,6 +49,7 @@ class Constant(nodeFunction):
         self.params_size = 2    #number of hyperparameters
 
     def __call__(self, r):
+        print(r.shape, 'here C')
         try:
             return self.c * np.ones_like(r) \
                         + self.wn**2 * np.diag(np.diag(np.ones_like(r)))
@@ -97,7 +99,10 @@ class WhiteNoise(nodeFunction):
         self.params_size = 1    #number of hyperparameters
 
     def __call__(self, r):
-        return self.wn**2 * np.diag(np.diag(np.ones_like(r)))
+        if r[0,:].shape == r[:,0].shape:
+            return self.wn**2 * np.diag(np.diag(np.ones_like(r)))
+        else:
+            return np.zeros_like(r)
 
 class dWhiteNoise_dwn(WhiteNoise):
     """

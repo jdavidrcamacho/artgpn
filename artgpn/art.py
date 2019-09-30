@@ -8,7 +8,7 @@ from artgpn.node import Linear as nodeL
 from artgpn.node import Polynomial as nodeP
 from artgpn.weight import Linear as weightL
 from artgpn.weight import Polynomial as weightP
-
+from artgpn.node import WhiteNoise as VVN
 
 class network(object):
     """ 
