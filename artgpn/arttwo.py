@@ -13,31 +13,14 @@ class network(object):
     """ 
         Class to create our Artifical Gaussian Process Network.
         Parameters:
-            nodes = node functions used
-            weights = weight funtion used
-            weights_values = array with the weight w11, w12, etc... size needs to 
-                        be equal to the number of nodes times the number of 
-                        components (self.q * self.p)
-            means = array of means functions being used, set it to None if a 
-                    model doesn't use it
-            jitters = jitter value of each dataset
+            num_nodes = number of node functions used
             time = time
             *args = the data (or components), it needs be given in order of
                 data1, data1_error, data2, data2_error, etc...
     """ 
-    def  __init__(self, nodes, weights, weights_values, means, jitters, time, *args):
-        #node functions
-        self.nodes = np.array(nodes)
+    def  __init__(self, num_nodes, time, *args):
         #number of nodes being used
-        self.q = len(self.nodes)
-        #weight function
-        self.weights = np.array(weights)
-        #amplitudes of the weight function
-        self.weights_values = np.array(weights_values)
-        #mean functions
-        self.means = np.array(means)
-        #jitters
-        self.jitters = np.array(jitters)
+        self.q = num_nodes
         #time
         self.time = time 
         #the data, it should be given as data1, data1_error, data2, ...
@@ -59,8 +42,6 @@ class network(object):
         self.y = np.array(self.y) #"extended" measurements
         self.yerr = np.array(self.yerr) #"extended" errors
         #check if the input was correct
-        assert self.means.size == self.p, \
-        'The numbers of means should be equal to the number of components'
         assert (i+1)/2 == self.p, \
         'Given data and number of components dont match'
 
@@ -97,34 +78,6 @@ class network(object):
 
 
 ##### mean functions
-    @property
-    def mean_pars_size(self):
-        return self._mean_pars_size
-
-    @mean_pars_size.getter
-    def mean_pars_size(self):
-        self._mean_pars_size = 0
-        for m in self.means:
-            if m is None: self._mean_pars_size += 0
-            else: self._mean_pars_size += m._parsize
-        return self._mean_pars_size
-
-    @property
-    def mean_pars(self):
-        return self._mean_pars
-
-    @mean_pars.setter
-    def mean_pars(self, pars):
-        pars = list(pars)
-        assert len(pars) == self.mean_pars_size
-        self._mean_pars = copy(pars)
-        for _, m in enumerate(self.means):
-            if m is None: 
-                continue
-            j = 0
-            for j in range(m._parsize):
-                m.pars[j] = pars.pop(0)
-
     def _mean(self, means, time=None):
         """
             Returns the values of the mean functions
@@ -178,8 +131,8 @@ class network(object):
             #except for the amplitude
             weightPars[0] =  weight_values[i-1 + self.q*(position_p-1)]
             #node and weight functions kernel
-            w = self._kernel_matrix(type(self.weights[0])(*weightPars), time)
-            f_hat = self._kernel_matrix(type(self.nodes[i - 1])(*nodePars),time)
+            w = self._kernel_matrix(type(weight[0])(*weightPars), time)
+            f_hat = self._kernel_matrix(type(nodes[i - 1])(*nodePars),time)
             #now we add all the necessary stuff
             k_ii += (w * f_hat)
         #adding measurement errors to our covariance matrix
@@ -225,7 +178,7 @@ class network(object):
             K = K + shift*np.identity(self.time.size * self.p)
         return K
 
-    def log_likelihood(self, nodes, weights, weights_values, means, jitters):
+    def log_likelihood(self, nodes, weight, weights_values, means, jitters):
         """ 
             Calculates the marginal log likelihood of our network. 
         See Rasmussen & Williams (2006), page 113.
@@ -254,12 +207,12 @@ class network(object):
                 #hyperparameteres of the kernel of a given position
                 nodePars = self._kernel_pars(nodes[j - 1])
                 #all weight function will have the same parameters
-                weightPars = self._kernel_pars(weights[0])
+                weightPars = self._kernel_pars(weight[0])
                 #except for the amplitude
                 weightPars[0] =  weights_values[j-1 + self.q*(i-1)]
                 #node and weight functions kernel
-                w = self._kernel_matrix(type(self.weights[0])(*weightPars), self.time)
-                f_hat = self._kernel_matrix(type(self.nodes[j - 1])(*nodePars), self.time)
+                w = self._kernel_matrix(type(weight[0])(*weightPars), self.time)
+                f_hat = self._kernel_matrix(type(nodes[j - 1])(*nodePars), self.time)
                 #now we add all the necessary stuff
                 k_ii = k_ii + (w * f_hat)
             #k_ii = k_ii + diag(error) + diag(jitter)
@@ -277,7 +230,7 @@ class network(object):
 
 
 ##### GP prediction functions
-    def prediction(self, nodes = None, weights = None, weights_values = None,
+    def prediction(self, nodes = None, weight = None, weight_values = None,
                    means = None, jitters= None, time = None, dataset = 1):
         """ 
             Conditional predictive distribution of the Gaussian process
@@ -296,17 +249,9 @@ class network(object):
                 y_cov = covariance matrix
         """
         print('Working with dataset {0}'.format(dataset))
-        #Nodes
-        nodes = nodes if nodes else self.nodes
-        #Weights
-        weights  = weights if weights else self.weights
-        #Weight values
-        weights_values = weights_values if weights_values else self.weights_values
         #means
         yy = np.concatenate(self.y)
         yy = yy - self._mean(means) if means else yy
-        #Jitters
-        jitters = jitters if jitters else self.jitters
         #Time
         time = time if time.any() else self.time
 
@@ -315,7 +260,7 @@ class network(object):
         new_yerr = np.array_split(yy_err, self.p)
 
         #cov = k + diag(error) + diag(jitter)
-        cov = self._covariance_matrix(nodes, weights[0], weights_values, 
+        cov = self._covariance_matrix(nodes, weight[0], weight_values, 
                                       self.time, dataset, add_errors = False)
         cov += (new_yerr[dataset - 1]**2) * np.identity(self.time.size) \
                     + (self.jitters[dataset - 1]**2) * np.identity(self.time.size)
@@ -328,17 +273,17 @@ class network(object):
             #hyperparameteres of the kernel of a given position
             nodePars = self._kernel_pars(nodes[i - 1])
             #all weight function will have the same parameters
-            weightPars = self._kernel_pars(weights[0])
+            weightPars = self._kernel_pars(weight[0])
             #except for the amplitude
-            weightPars[0] =  weights_values[i-1 + self.q*(dataset - 1)]
+            weightPars[0] =  weight_values[i-1 + self.q*(dataset - 1)]
             #node and weight functions kernel
-            w = self._predict_kernel_matrix(type(self.weights[0])(*weightPars), time)
-            f_hat = self._predict_kernel_matrix(type(self.nodes[i - 1])(*nodePars), time)
+            w = self._predict_kernel_matrix(type(self.weight[0])(*weightPars), time)
+            f_hat = self._predict_kernel_matrix(type(nodes[i - 1])(*nodePars), time)
             #now we add all the necessary stuff
             k_ii = k_ii + (w * f_hat)
 
         Kstar = k_ii
-        Kstarstar = self._covariance_matrix(nodes, weights[0], weights_values, time, 
+        Kstarstar = self._covariance_matrix(nodes, weight[0], weight_values, time, 
                                             dataset, add_errors = False)
         Kstarstar += (jitters[dataset - 1]**2) * np.identity(time.size)
 

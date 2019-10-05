@@ -13,6 +13,7 @@ from artgpn import node
 from artgpn import mean
 #network
 from artgpn import art
+from artgpn import arttwo
 
 #util functions
 from artgpn import utils
