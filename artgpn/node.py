@@ -435,12 +435,20 @@ class RQP(nodeFunction):
 
     def __call__(self, r):
         try:
-            return exp(- 2*sine(pi*np.abs(r)/self.P)**2 / self.ell_p**2) \
-                        /(1+ r**2/ (2*self.alpha*self.ell_e**2))**self.alpha \
-                        + self.wn**2 * np.diag(np.diag(np.ones_like(r)))
+            #because of numpy issues
+            a = exp(- 2*sine(pi*np.abs(r)/self.P)**2 / self.ell_p**2)
+            b = (1+ r**2/ (2*self.alpha*self.ell_e**2))#**self.alpha
+            c = self.wn**2 * np.diag(np.diag(np.ones_like(r)))
+            return a / (np.sign(b) * (np.abs(b)) ** self.alpha) + c
+#            return exp(- 2*sine(pi*np.abs(r)/self.P)**2 / self.ell_p**2) \
+#                        /(1+ r**2/ (2*self.alpha*self.ell_e**2))**self.alpha \
+#                        + self.wn**2 * np.diag(np.diag(np.ones_like(r)))
         except ValueError:
-            return exp(- 2*sine(pi*np.abs(r)/self.P)**2 / self.ell_p**2) \
-                        /(1+ r**2/ (2*self.alpha*self.ell_e**2))**self.alpha
+            a = exp(- 2*sine(pi*np.abs(r)/self.P)**2 / self.ell_p**2)
+            b = (1+ r**2/ (2*self.alpha*self.ell_e**2))#**self.alpha
+            return a / (np.sign(b) * (np.abs(b)) ** self.alpha)
+#            return exp(- 2*sine(pi*np.abs(r)/self.P)**2 / self.ell_p**2) \
+#                        /(1+ r**2/ (2*self.alpha*self.ell_e**2))**self.alpha
 
 class dRQP_dalpha(RQP):
     """
