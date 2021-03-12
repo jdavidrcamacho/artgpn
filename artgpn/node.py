@@ -40,48 +40,15 @@ class Constant(nodeFunction):
             c = constant
             wn = white noise amplitude
     """
-    def __init__(self, c, wn):
-        super(Constant, self).__init__(c, wn)
+    def __init__(self, c):
+        super(Constant, self).__init__(c)
         self.c = c
-        self.wn = wn
         self.type = 'non-stationary and anisotropic'
-        self.derivatives = 2    #number of derivatives in this kernel
-        self.params_size = 2    #number of hyperparameters
-
-    def __call__(self, r):
-        print(r.shape, 'here C')
-        try:
-            return self.c * np.ones_like(r) \
-                        + self.wn**2 * np.diag(np.diag(np.ones_like(r)))
-        except ValueError:
-            return self.c * np.ones_like(r)
-
-class dConstant_dc(Constant):
-    """
-        Log-derivative in order to c
-    """
-    def __init__(self, c, wn):
-        super(dConstant_dc, self).__init__(c, wn)
-        self.c = c
-        self.wn = wn
+        self.derivatives = 1    #number of derivatives in this kernel
+        self.params_size = 1    #number of hyperparameters
 
     def __call__(self, r):
         return self.c * np.ones_like(r)
-
-class dConstant_dwn(Constant):
-    """
-        Log-derivative in order to the white noise
-    """
-    def __init__(self, c, wn):
-        super(dConstant_dwn, self).__init__(c, wn)
-        self.c = c
-        self.wn = wn
-
-    def __call__(self, r):
-        try:
-            return 2 * self.wn**2 * np.diag(np.diag(np.ones_like(r)))
-        except ValueError:
-            return np.zeros_like(r)
 
 
 ##### White Noise ##############################################################
@@ -104,17 +71,6 @@ class WhiteNoise(nodeFunction):
         else:
             return np.zeros_like(r)
 
-class dWhiteNoise_dwn(WhiteNoise):
-    """
-        Log-derivative in order to the amplitude
-    """
-    def __init__(self, wn):
-        super(dWhiteNoise_dwn, self).__init__(wn)
-        self.wn = wn
-
-    def __call__(self, r):
-        return 2 * self.wn**2 * np.diag(np.diag(np.ones_like(r)))
-
 
 ##### Squared exponential ######################################################
 class SquaredExponential(nodeFunction):
@@ -125,47 +81,15 @@ class SquaredExponential(nodeFunction):
             ell = length-scale
             wn = white noise
     """
-    def __init__(self, ell, wn):
-        super(SquaredExponential, self).__init__(ell, wn)
+    def __init__(self, ell):
+        super(SquaredExponential, self).__init__(ell)
         self.ell = ell
-        self.wn = wn
         self.type = 'stationary and anisotropic'
-        self.derivatives = 2    #number of derivatives in this kernel
-        self.params_size = 2    #number of hyperparameters
+        self.derivatives = 1    #number of derivatives in this kernel
+        self.params_size = 1    #number of hyperparameters
 
     def __call__(self, r):
-        try:
-            return exp(-0.5 * r**2 / self.ell**2) \
-                    + self.wn**2 * np.diag(np.diag(np.ones_like(r)))
-        except ValueError:
-            return exp(-0.5 * r**2 / self.ell**2)
-
-class dSquaredExponential_dell(SquaredExponential):
-    """
-        Log-derivative in order to ell
-    """
-    def __init__(self, ell, wn):
-        super(dSquaredExponential_dell, self).__init__(ell, wn)
-        self.ell = ell
-        self.wn = wn
-        
-    def __call__(self, r):
-        return (r**2 / self.ell**2) * exp(-0.5 * r**2 / self.ell**2)
-
-class dSquaredExponential_dwn(SquaredExponential):
-    """
-        Log-derivative in order to the wn
-    """
-    def __init__(self, ell, wn):
-        super(dSquaredExponential_dwn, self).__init__(ell, wn)
-        self.ell = ell
-        self.wn = wn
-        
-    def __call__(self, r):
-        try:
-            return 2 * self.wn**2 * np.diag(np.diag(np.ones_like(r)))
-        except ValueError:
-            return np.zeros_like(r)
+        return exp(-0.5 * r**2 / self.ell**2)
 
 
 ##### Periodic #################################################################
@@ -177,66 +101,16 @@ class Periodic(nodeFunction):
             P = period
             wn = white noise
     """
-    def __init__(self, P, ell, wn):
-        super(Periodic, self).__init__(P, ell, wn)
+    def __init__(self, P, ell):
+        super(Periodic, self).__init__(P, ell)
         self.P = P
         self.ell = ell
-        self.wn = wn
         self.type = 'non-stationary and isotropic'
-        self.derivatives = 3    #number of derivatives in this kernel
-        self.params_size = 3    #number of hyperparameters
+        self.derivatives = 2    #number of derivatives in this kernel
+        self.params_size = 2    #number of hyperparameters
 
     def __call__(self, r):
-        try:
-            return exp( -2 * sine(pi*np.abs(r)/self.P)**2 / self.ell**2) \
-                    + self.wn**2 * np.diag(np.diag(np.ones_like(r)))
-        except ValueError:
-            return exp( -2 * sine(pi*np.abs(r)/self.P)**2 / self.ell**2)
-
-class dPeriodic_dell(Periodic):
-    """
-        Log-derivative in order to ell
-    """
-    def __init__(self, P, ell,  wn):
-        super(dPeriodic_dell, self).__init__(P, ell,  wn)
-        self.P = P
-        self.ell = ell
-        self.wn = wn
-
-    def __call__(self, r):
-        return 4 * sine(pi*np.abs(r)/self.P)**2 / self.ell **2 \
-                * exp( -2 * sine(pi*np.abs(r)/self.P)**2 / self.ell**2)
-
-class dPeriodic_dP(Periodic):
-    """
-        Log-derivative in order to P
-    """
-    def __init__(self, P, ell, wn):
-        super(dPeriodic_dP, self).__init__(P, ell, wn)
-        self.P = P
-        self.ell = ell
-        self.wn = wn
-
-    def __call__(self, r):
-        return 4*pi*r * cosine(pi*np.abs(r)/self.P) * sine(pi*np.abs(r)/self.P) \
-                * exp(-2 * sine(pi * np.abs(r) /self.P)**2 / self.ell**2) \
-                / (self.ell**2 * self.P)
-
-class dPeriodic_dwn(Periodic):
-    """
-        Log-derivative in order to wn
-    """
-    def __init__(self, P, ell, wn):
-        super(dPeriodic_dwn, self).__init__(P, ell, wn)
-        self.P = P
-        self.ell = ell
-        self.wn = wn
-
-    def __call__(self, r):
-        try:
-            return 2 * self.wn**2 * np.diag(np.diag(np.ones_like(r)))
-        except ValueError:
-            return np.zeros_like(r)
+        return exp( -2 * sine(pi*np.abs(r)/self.P)**2 / self.ell**2)
 
 
 ##### Quasi Periodic ###########################################################
@@ -251,91 +125,18 @@ class QuasiPeriodic(nodeFunction):
             ell_p = length scale of the periodic component
             wn = white noise
     """
-    def __init__(self, ell_e, P, ell_p, wn):
-        super(QuasiPeriodic, self).__init__(ell_e, P, ell_p, wn)
+    def __init__(self, ell_e, P, ell_p):
+        super(QuasiPeriodic, self).__init__(ell_e, P, ell_p)
         self.ell_e = ell_e
         self.P = P
         self.ell_p = ell_p
-        self.wn = wn
         self.type = 'non-stationary and anisotropic'
-        self.derivatives = 4    #number of derivatives in this kernel
-        self.params_size = 4    #number of hyperparameters
+        self.derivatives = 3    #number of derivatives in this kernel
+        self.params_size = 3    #number of hyperparameters
 
     def __call__(self, r):
-        try:
-            return exp(- 2*sine(pi*r/self.P)**2 \
-                       /self.ell_p**2 - r**2/(2*self.ell_e**2)) \
-                       + self.wn**2 * np.diag(np.diag(np.ones_like(r)))
-        except ValueError:
-            return exp(- 2*sine(pi*np.abs(r)/self.P)**2 \
+        return exp(- 2*sine(pi*np.abs(r)/self.P)**2 \
                        /self.ell_p**2 - r**2/(2*self.ell_e**2))
-
-class dQuasiPeriodic_delle(QuasiPeriodic):
-    """
-        Log-derivative in order to ell_e
-    """
-    def __init__(self, ell_e, P, ell_p, wn):
-        super(dQuasiPeriodic_delle, self).__init__(ell_e, P, ell_p, wn)
-        self.ell_e = ell_e
-        self.P = P
-        self.ell_p = ell_p
-        self.wn = wn
-
-    def __call__(self, r):
-        return (r**2 * exp(-0.5 * r**2 / self.ell_e**2 \
-                           -2 * sine(pi * np.abs(r) / self.P)**2 \
-                           / self.ell_p**2)) / self.ell_e**2
-
-class dQuasiPeriodic_dP(QuasiPeriodic):
-    """
-        Log-derivative in order to P
-    """
-    def __init__(self, ell_e, P, ell_p, wn):
-        super(dQuasiPeriodic_dP, self).__init__(ell_e, P, ell_p, wn)
-        self.ell_e = ell_e
-        self.P = P
-        self.ell_p = ell_p
-        self.wn = wn
-
-    def __call__(self, r):
-        return (4 * pi * r * cosine(pi * np.abs(r) / self.P) \
-                * sine(pi * np.abs(r) / self.P) \
-                * exp(-0.5 * r**2 / self.ell_e**2 \
-                     - 2 * sine(pi * np.abs(r) /self.P)**2 / self.ell_p**2)) \
-                / (self.ell_p**2 * self.P)
-
-class dQuasiPeriodic_dellp(QuasiPeriodic):
-    """
-        Log-derivative in order to ell_p
-    """
-    def __init__(self, ell_e, P, ell_p, wn):
-        super(dQuasiPeriodic_dellp, self).__init__(ell_e, P, ell_p, wn)
-        self.ell_e = ell_e
-        self.P = P
-        self.ell_p = ell_p
-        self.wn = wn
-
-    def __call__(self, r):
-        return (4 * sine(pi * np.abs(r) /self.P)**2 * exp(-0.5 * r**2 \
-                / self.ell_e**2 -2 * sine(pi*np.abs(r) / self.P)**2 \
-                      / self. ell_p**2)) / self.ell_p**2
-
-class dQuasiPeriodic_dwn(QuasiPeriodic):
-    """
-        Log-derivative in order to wn
-    """
-    def __init__(self, ell_e, P, ell_p, wn):
-        super(dQuasiPeriodic_dwn, self).__init__(ell_e, P, ell_p, wn)
-        self.ell_e = ell_e
-        self.P = P
-        self.ell_p = ell_p
-        self.wn = wn
-
-    def __call__(self, r):
-        try:
-            return 2 * self.wn**2 * np.diag(np.diag(np.ones_like(r)))
-        except ValueError:
-            return np.zeros_like(r)
 
 
 ##### Rational Quadratic #######################################################
@@ -347,66 +148,16 @@ class RationalQuadratic(nodeFunction):
             ell = characteristic lenght scale to define the kernel "smoothness"
             wn = white noise amplitude
     """
-    def __init__(self, alpha, ell, wn):
-        super(RationalQuadratic, self).__init__(alpha, ell, wn)
+    def __init__(self, alpha, ell):
+        super(RationalQuadratic, self).__init__(alpha, ell)
         self.alpha = alpha
         self.ell = ell
-        self.wn = wn
         self.type = 'stationary and anisotropic'
-        self.derivatives = 3    #number of derivatives in this kernel
-        self.params_size = 3    #number of hyperparameters
+        self.derivatives = 2    #number of derivatives in this kernel
+        self.params_size = 2    #number of hyperparameters
 
     def __call__(self, r):
-        try: 
-            return 1 / (1+ r**2/ (2*self.alpha*self.ell**2))**self.alpha \
-                    + self.wn**2 * np.diag(np.diag(np.ones_like(r)))
-        except ValueError:
-            return 1 / (1+ r**2/ (2*self.alpha*self.ell**2))**self.alpha
-
-class dRationalQuadratic_dalpha(RationalQuadratic):
-    """
-        Log-derivative in order to alpha
-    """
-    def __init__(self, alpha, ell, wn):
-        super(dRationalQuadratic_dalpha, self).__init__(alpha, ell, wn)
-        self.alpha = alpha
-        self.ell = ell
-        self.wn = wn
-
-    def __call(self, r):
-        return ((r**2/(2*self.alpha*self.ell**2*(r**2/(2*self.alpha*self.ell**2)+1))\
-                 - np.log(r**2/(2*self.alpha*self.ell**2)+1)) * self.alpha) \
-                    / (1+r**2/(2*self.alpha*self.ell**2))**self.alpha
-
-class dRationalQuadratic_dell(RationalQuadratic):
-    """
-        Log-derivative in order to ell
-    """
-    def __init__(self, alpha, ell, wn):
-        super(dRationalQuadratic_dell, self).__init__(alpha, ell, wn)
-        self.alpha = alpha
-        self.ell = ell
-        self.wn = wn
-
-    def __call(self, r):
-        return r**2 * (1+r**2/(2*self.alpha*self.ell**2))**(-1-self.alpha) \
-                * 1 / self.ell**2
-
-class dRationalQuadratic_dwn(RationalQuadratic):
-    """
-        Log-derivative in order to the white noise
-    """
-    def __init__(self, alpha, ell, wn):
-        super(dRationalQuadratic_dwn, self).__init__(alpha, ell, wn)
-        self.alpha = alpha
-        self.ell = ell
-        self.wn = wn
-        
-    def __call__(self, r):
-        try:
-            return 2 * self.wn**2 * np.diag(np.diag(np.ones_like(r)))
-        except ValueError:
-            return np.zeros_like(r)
+        return 1 / (1+ r**2/ (2*self.alpha*self.ell**2))**self.alpha
 
 
 ##### RQP kernel ###############################################################
@@ -422,120 +173,20 @@ class RQP(nodeFunction):
             P = periodic repetitions of the kernel
             wn = white noise amplitude
     """
-    def __init__(self, alpha, ell_e, P, ell_p, wn):
-        super(RQP, self).__init__(alpha, ell_e, P, ell_p, wn)
+    def __init__(self, alpha, ell_e, P, ell_p):
+        super(RQP, self).__init__(alpha, ell_e, P, ell_p)
         self.alpha = alpha
         self.ell_e = ell_e
         self.P = P
         self.ell_p = ell_p
-        self.wn = wn
         self.type = 'non-stationary and anisotropic'
-        self.derivatives = 5    #number of derivatives in this kernel
-        self.params_size = 5    #number of hyperparameters
+        self.derivatives = 4    #number of derivatives in this kernel
+        self.params_size = 4    #number of hyperparameters
 
     def __call__(self, r):
-        try:
-            #because of numpy issues
-            a = exp(- 2*sine(pi*np.abs(r)/self.P)**2 / self.ell_p**2)
-            b = (1+ r**2/ (2*self.alpha*self.ell_e**2))#**self.alpha
-            c = self.wn**2 * np.diag(np.diag(np.ones_like(r)))
-            return a / (np.sign(b) * (np.abs(b)) ** self.alpha) + c
-#            return exp(- 2*sine(pi*np.abs(r)/self.P)**2 / self.ell_p**2) \
-#                        /(1+ r**2/ (2*self.alpha*self.ell_e**2))**self.alpha \
-#                        + self.wn**2 * np.diag(np.diag(np.ones_like(r)))
-        except ValueError:
-            a = exp(- 2*sine(pi*np.abs(r)/self.P)**2 / self.ell_p**2)
-            b = (1+ r**2/ (2*self.alpha*self.ell_e**2))#**self.alpha
-            return a / (np.sign(b) * (np.abs(b)) ** self.alpha)
-#            return exp(- 2*sine(pi*np.abs(r)/self.P)**2 / self.ell_p**2) \
-#                        /(1+ r**2/ (2*self.alpha*self.ell_e**2))**self.alpha
-
-class dRQP_dalpha(RQP):
-    """
-        Log-derivative in order to alpha
-    """
-    def __init__(self, alpha, ell_e, P, ell_p, wn):
-        super(dRQP_dalpha, self).__init__(alpha, ell_e, P, ell_p, wn)
-        self.alpha = alpha
-        self.ell_e = ell_e
-        self.P = P
-        self.ell_p = ell_p
-        self.wn = wn
-
-    def __call__(self, r):
-        return self.alpha * ((r**2 / (2*self.alpha \
-                         *self.ell_e**2*(r**2/(2*self.alpha*self.ell_e**2)+1)) \
-            -np.log(r**2/(2*self.alpha*self.ell_e**2)+1)) \
-            *exp(-2*sine(pi*np.abs(r)/self.P)**2/self.ell_p**2)) \
-            /(1+r**2/(2*self.alpha*self.ell_e**2))**self.alpha
-
-class dRQP_delle(RQP):
-    """
-        Log-derivative in order to ell_e
-    """
-    def __init__(self, alpha, ell_e, P, ell_p, wn):
-        super(dRQP_delle, self).__init__(alpha, ell_e, P, ell_p, wn)
-        self.alpha = alpha
-        self.ell_e = ell_e
-        self.P = P
-        self.ell_p = ell_p
-        self.wn = wn
-
-    def __call__(self, r):
-        return (r**2*(1+r**2/(2*self.alpha*self.ell_e**2))**(-1-self.alpha) \
-                *exp(-2*sine(pi*np.abs(r)/self.P)**2/self.ell_p**2))/self.ell_e**2
-
-class dRQP_dP(RQP):
-    """
-        Log-derivative in order to P
-    """
-    def __init__(self, alpha, ell_e, P, ell_p, wn):
-        super(dRQP_dP, self).__init__(alpha, ell_e, P, ell_p, wn)
-        self.alpha = alpha
-        self.ell_e = ell_e
-        self.P = P
-        self.ell_p = ell_p
-        self.wn = wn
-
-    def __call__(self, r):
-        return (4*pi*r*cosine(pi*np.abs(r)/self.P)*sine(pi*np.abs(r)/self.P) \
-                *exp(-2*sine(pi*np.abs(r)/self.P)**2/self.ell_p**2)) \
-            /(self.ell_p**2*(1+r**2/(2*self.alpha*self.ell_e**2))^self.alpha*self.P)
-
-class dRQP_dellp(RQP):
-    """
-        Log-derivative in order to ell_p
-    """
-    def __init__(self, alpha, ell_e, P, ell_p, wn):
-        super(dRQP_dellp, self).__init__(alpha, ell_e, P, ell_p, wn)
-        self.alpha = alpha
-        self.ell_e = ell_e
-        self.P = P
-        self.ell_p = ell_p
-        self.wn = wn
-
-    def __call(self, r):
-        return (4*sine(pi*np.abs(r)/self.P)**2 \
-                *exp(-2*sine(pi*np.abs(r)/self.P)**2/self.ell_p**2)) \
-                /(self.ell_p**2*(1+r**2/(2*self.alpha*self.ell_e**2))**self.alpha)
-
-class dRQP_dwn(RQP):
-    """
-        Log-derivative in order to the white noise
-    """
-    def __init__(self, alpha, ell_e, P, ell_p, wn):
-        super(dRQP_dwn, self).__init__(alpha, ell_e, P, ell_p, wn)
-        self.alpha = alpha
-        self.ell_e = ell_e
-        self.P = P
-        self.ell_p = ell_p
-        self.wn = wn
-
-    def __call(self, r):
-        try:
-            return 2 * self.wn**2 * np.diag(np.diag(np.ones_like(r)))
-        except ValueError:
-            return np.zeros_like(r)
+        a = exp(- 2*sine(pi*np.abs(r)/self.P)**2 / self.ell_p**2)
+        b = (1+ r**2/ (2*self.alpha*self.ell_e**2))#**self.alpha
+        return a / (np.sign(b) * (np.abs(b)) ** self.alpha)
 
 
 ##### Cosine ###################################################################
@@ -546,98 +197,16 @@ class Cosine(nodeFunction):
             P = period
             wn = white noise amplitude
     """
-    def __init__(self, P, wn):
-        super(Cosine, self).__init__(P, wn)
+    def __init__(self, P):
+        super(Cosine, self).__init__(P)
         self.P = P
-        self.wn = wn
         self.type = 'non-stationary and isotropic'
-        self.derivatives = 2    #number of derivatives in this kernel
-        self.params_size = 2    #number of hyperparameters
+        self.derivatives = 1    #number of derivatives in this kernel
+        self.params_size = 1    #number of hyperparameters
 
     def __call__(self, r):
-        try:
-            return cosine(2*pi*np.abs(r) / self.P) \
-                    + self.wn**2 * np.diag(np.diag(np.ones_like(r)))
-        except ValueError:
-            return cosine(2*pi*np.abs(r) / self.P)
+        return cosine(2*pi*np.abs(r) / self.P)
 
-class dCosine_dP(Cosine):
-    """
-        Log-derivative in order to P
-    """
-    def __init__(self, P, wn):
-        super(dCosine_dP, self).__init__(P, wn)
-        self.P = P
-        self.wn = wn
-
-    def __call__(self, r):
-        return r * pi * sine(2*pi*np.abs(r) / self.P) / self.P
-
-class dCosine_dwn(Cosine):
-    """
-        Log-derivative in order to the white noise
-    """
-    def __init__(self, P, wn):
-        super(dCosine_dwn, self).__init__(P, wn)
-        self.P = P
-        self.wn = wn
-
-    def __call__(self, r):
-        try:
-            return 2 * self.wn**2 * np.diag(np.diag(np.ones_like(r)))
-        except ValueError:
-            return np.zeros_like(r)
-
-
-##### Laplacian ##############################################################
-class Laplacian(nodeFunction):
-    """
-        Definition of the Laplacian kernel.
-        Parameters:
-            ell = characteristic lenght scale
-            wn = white noise amplitude
-    """
-    def __init__(self, ell, wn):
-        super(Laplacian, self).__init__(ell, wn)
-        self.ell = ell
-        self.wn = wn
-        self.type = 'stationary and isotropic'
-        self.derivatives = 2    #number of derivatives in this kernel
-        self.params_size = 2    #number of hyperparameters
-
-    def __call__(self, r): 
-        try:
-            return exp(- np.abs(r)/self.ell) \
-                    + self.wn**2 * np.diag(np.diag(np.ones_like(r)))
-        except ValueError:
-            return exp(- np.abs(r)/self.ell) 
-
-class dLaplacian_dell(Laplacian):
-    """
-        Log-derivative in order to ell
-    """
-    def __init__(self, ell, wn):
-        super(dLaplacian_dell, self).__init__(ell, wn)
-        self.ell = ell
-        self.wn = wn
-
-    def __call__(self, r):
-        return -0.5 * r * exp(- np.abs(r)/self.ell) / self.ell
-
-class dLaplacian_dwn(Laplacian):
-    """
-        Log-derivative in order to the white noise
-    """
-    def __init__(self, ell, wn):
-        super(dLaplacian_dwn, self).__init__(ell, wn)
-        self.ell = ell
-        self.wn = wn
-
-    def __call__(self, r):
-        try:
-            return 2 * self.wn**2 * np.diag(np.diag(np.ones_like(r)))
-        except ValueError:
-            return np.zeros_like(r)
 
 ##### Exponential ##############################################################
 class Exponential(nodeFunction):
@@ -647,44 +216,15 @@ class Exponential(nodeFunction):
             ell = characteristic lenght scale
             wn = white noise amplitude
     """
-    def __init__(self, ell, wn):
-        super(Exponential, self).__init__(ell, wn)
+    def __init__(self, ell):
+        super(Exponential, self).__init__(ell)
         self.ell = ell
-        self.wn = wn
         self.type = 'stationary and isotropic'
-        self.derivatives = 2    #number of derivatives in this kernel
-        self.params_size = 2    #number of hyperparameters
+        self.derivatives = 1    #number of derivatives in this kernel
+        self.params_size = 1    #number of hyperparameters
 
     def __call__(self, r): 
-        try:
-            return exp(- np.abs(r)/(2 * self.ell**2)) \
-                    + self.wn**2 * np.diag(np.diag(np.ones_like(r)))
-        except ValueError:
-            return exp(- np.abs(r)/self.ell) 
-
-class dExpoential_dell(Exponential):
-    """
-        Log-derivative in order to ell
-    """
-    def __init__(self, ell, wn):
-        super(dExpoential_dell, self).__init__(ell, wn)
-        self.ell = ell
-        self.wn = wn
-
-    def __call__(self, r):
-        raise NotImplementedError
-
-class dExpoential_dwn(Exponential):
-    """
-        Log-derivative in order to the white noise
-    """
-    def __init__(self, ell, wn):
-        super(dExpoential_dwn, self).__init__(ell, wn)
-        self.ell = ell
-        self.wn = wn
-
-    def __call__(self, r):
-        raise NotImplementedError
+        return exp(- np.abs(r)/self.ell) 
 
 
 ##### Matern 3/2 ###############################################################
@@ -696,51 +236,16 @@ class Matern32(nodeFunction):
             ell = characteristic lenght scale
             wn = white noise amplitude
     """
-    def __init__(self, ell, wn):
-        super(Matern32, self).__init__(ell, wn)
+    def __init__(self, ell):
+        super(Matern32, self).__init__(ell)
         self.ell = ell
-        self.wn = wn
         self.type = 'stationary and isotropic'
-        self.derivatives = 2    #number of derivatives in this kernel
-        self.params_size = 2    #number of hyperparameters
+        self.derivatives = 1    #number of derivatives in this kernel
+        self.params_size = 1    #number of hyperparameters
 
     def __call__(self, r):
-        try:
-            return (1.0 + np.sqrt(3.0)*np.abs(r)/self.ell) \
-                        *np.exp(-np.sqrt(3.0)*np.abs(r) / self.ell) \
-                        + self.wn**2 * np.diag(np.diag(np.ones_like(r)))
-        except ValueError:
-            return (1.0 + np.sqrt(3.0)*np.abs(r)/self.ell) \
+        return (1.0 + np.sqrt(3.0)*np.abs(r)/self.ell) \
                         *np.exp(-np.sqrt(3.0)*np.abs(r) / self.ell)
-
-class dMatern32_dell(Matern32):
-    """
-        Log-derivative in order to ell
-    """
-    def __init__(self, ell, wn):
-        super(dMatern32_dell, self).__init__(ell, wn)
-        self.ell = ell
-        self.wn = wn
-
-    def __call__(self, r):
-        return (sqrt(3) * r * (1+ (sqrt(3) * r) / self.ell) \
-                *exp(-(sqrt(3)*r) / self.ell)) / self.ell \
-                -(sqrt(3) * r * exp(-(sqrt(3)*r) / self.ell))/self.ell
-
-class dMatern32_dwn(Matern32):
-    """
-        Log-derivative in order to the white noise
-    """
-    def __init__(self, ell, wn):
-        super(dMatern32_dwn, self).__init__(ell, wn)
-        self.ell = ell
-        self.wn = wn
-
-    def __call__(self, r):
-        try:
-            return 2 * self.wn**2 * np.diag(np.diag(np.ones_like(r)))
-        except ValueError:
-            return np.zeros_like(r)
 
 
 #### Matern 5/2 ################################################################
@@ -752,56 +257,17 @@ class Matern52(nodeFunction):
             ell = characteristic lenght scale  
             wn = white noise amplitude
     """
-    def __init__(self, ell, wn):
-        super(Matern52, self).__init__(ell, wn)
+    def __init__(self, ell):
+        super(Matern52, self).__init__(ell)
         self.ell = ell
-        self.wn = wn
         self.type = 'stationary and isotropic'
         self.derivatives = 2    #number of derivatives in this kernel
         self.params_size = 2    #number of hyperparameters
 
     def __call__(self, r):
-        try:
-            return (1.0 + ( 3*np.sqrt(5)*self.ell*np.abs(r) \
-                           +5*np.abs(r)**2)/(3*self.ell**2) ) \
-                           *exp(-np.sqrt(5.0)*np.abs(r)/self.ell) \
-                           + self.wn**2 * np.diag(np.diag(np.ones_like(r)))
-        except ValueError:
-            return (1.0 + ( 3*np.sqrt(5)*self.ell*np.abs(r) \
+        return (1.0 + ( 3*np.sqrt(5)*self.ell*np.abs(r) \
                            +5*np.abs(r)**2)/(3*self.ell**2) ) \
                            *exp(-np.sqrt(5.0)*np.abs(r)/self.ell)
-
-class dMatern52_dell(Matern52):
-    """
-        Log-derivative in order to ell
-    """
-    def __init__(self, ell, wn):
-        super(dMatern52_dell, self).__init__(ell, wn)
-        self.ell = ell
-        self.wn = wn
-
-    def __call__(self, r):
-        return self.ell * ((sqrt(5)*r*(1+(sqrt(5)*r) \
-                                 /self.ell+(5*r**2)/(3*self.ell**2)) \
-                             *exp(-(sqrt(5)*r)/self.ell)) \
-            /self.ell**2 +(-(sqrt(5)*r)/self.ell**2-(10*r**2) \
-                           /(3*self.ell**3)) \
-                           *exp(-(sqrt(5)*r)/self.ell))
-
-class dMatern52_dwn(Matern52):
-    """
-        Log-derivative in order to the white noise
-    """
-    def __init__(self, ell, wn):
-        super(dMatern52_dwn, self).__init__(ell, wn)
-        self.ell = ell
-        self.wn = wn
-
-    def __call__(self, r):
-        try:
-            return 2 * self.wn**2 * np.diag(np.diag(np.ones_like(r)))
-        except ValueError:
-            return np.zeros_like(r)
 
 
 #### Linear ####################################################################
@@ -811,47 +277,15 @@ class Linear(nodeFunction):
             c = constant
             wn = white noise amplitude
     """
-    def __init__(self, c, wn):
-        super(Linear, self).__init__(c, wn)
+    def __init__(self, c):
+        super(Linear, self).__init__(c)
         self.c = c
-        self.wn = wn
         self.type = 'non-stationary and anisotropic'
-        self.derivatives = 2    #number of derivatives in this kernel
-        self.params_size = 2    #number of hyperparameters
+        self.derivatives = 1    #number of derivatives in this kernel
+        self.params_size = 1    #number of hyperparameters
 
     def __call__(self, r, t1, t2):
-        try:
-            return  (t1 - self.c) * (t2 - self.c) \
-                + self.wn**2 * np.diag(np.diag(np.ones_like(r)))
-        except ValueError:
-            return  (t1 - self.c) * (t2 - self.c)
-
-class dLinear_dc(Linear):
-    """
-        Log-derivative in order to c
-    """
-    def __init__(self, c, wn):
-        super(dLinear_dc, self).__init__(c, wn)
-        self.c = c
-        self.wn = wn
-
-    def __call__(self, r, t1, t2):
-        return self.c * (-t1 - t2 + 2*self.c)
-
-class dLinear_dwn(Linear):
-    """
-        Log-derivative in order to the white noise
-    """
-    def __init__(self, c, wn):
-        super(dLinear_dwn, self).__init__(c, wn)
-        self.c = c
-        self.wn = wn
-
-    def __call__(self, r, t1, t2):
-        try:
-            return 2 * self.wn**2 * np.diag(np.diag(np.ones_like(r)))
-        except ValueError:
-            return np.zeros_like(r)
+        return  (t1 - self.c) * (t2 - self.c)
 
 
 ##### Gamma-exponential ########################################################
@@ -862,65 +296,16 @@ class GammaExp(nodeFunction):
             ell = lenght scale
             wn = white noise amplitude
     """
-    def __init__(self, gamma, ell, wn):
-        super(GammaExp, self).__init__(gamma, ell, wn)
+    def __init__(self, gamma, ell):
+        super(GammaExp, self).__init__(gamma, ell)
         self.gamma = gamma
         self.ell = ell
-        self.wn = wn
         self.type = 'non-stationary and anisotropic'
-        self.derivatives = 3    #number of derivatives in this kernel
-        self.params_size = 3    #number of hyperparameters
+        self.derivatives = 2    #number of derivatives in this kernel
+        self.params_size = 2    #number of hyperparameters
 
     def __call__(self, r):
-        try: 
-            return exp( -(np.abs(r)/self.ell)**self.gamma) \
-                    + self.wn**2 * np.diag(np.diag(np.ones_like(r)))
-        except ValueError:
-            return exp( - (np.abs(r)/self.ell) ** self.gamma) 
-
-class dGammaExp_dgamma(GammaExp):
-    """
-        Log-derivative in order to ell
-    """
-    def __init__(self, gamma, ell, wn):
-        super(dGammaExp_dgamma, self).__init__(gamma, ell, wn)
-        self.gamma = gamma
-        self.ell = ell
-        self.wn = wn
-
-    def __call__(self, r):
-        return -self.gamma * (np.abs(r)/self.ell)**self.gamma \
-                *np.log(np.abs(r)/self.ell) * exp(-(np.abs(r)/self.ell)**self.gamma)
-
-class dGammaExp_dell(GammaExp):
-    """
-        Log-derivative in order to gamma
-    """
-    def __init__(self, gamma, ell, wn):
-        super(dGammaExp_dell, self).__init__(gamma, ell, wn)
-        self.gamma = gamma
-        self.ell = ell
-        self.wn = wn
-
-    def __call__(self, r):
-        return (np.abs(r)/self.ell)**self.gamma \
-                * self.gamma * exp(-(np.abs(r)/self.ell)**self.gamma)
-
-class dGammaExp_dwn(GammaExp):
-    """
-        Log-derivative in order to the white noise
-    """
-    def __init__(self, gamma, ell, wn):
-        super(dGammaExp_dwn, self).__init__(gamma, ell, wn)
-        self.gamma = gamma
-        self.ell = ell
-        self.wn = wn
-
-    def __call__(self, r):
-        try:
-            return 2 * self.wn**2 * np.diag(np.diag(np.ones_like(r)))
-        except ValueError:
-            return np.zeros_like(r)
+        return exp( - (np.abs(r)/self.ell) ** self.gamma) 
 
 
 ##### Polinomial ###############################################################
@@ -932,78 +317,14 @@ class Polynomial(nodeFunction):
             c = integer value
             wn = white noise amplitude
     """
-    def __init__(self, a, b, c, wn):
-        super(Polynomial, self).__init__(a, b, c, wn)
+    def __init__(self, a, b, c):
+        super(Polynomial, self).__init__(a, b, c)
         self.a = a
         self.b = b
         self.c = c
-        self.wn = wn
 
     def __call__(self, r, t1, t2):
-        try: 
-            return (self.a * t1 * t2 + self.b)**self.c \
-                    + self.wn**2 * np.diag(np.diag(np.ones_like(r)))
-        except ValueError:
-            return (self.a * t1 * t2 + self.b)**self.c 
-
-class dPolynomial_da(Polynomial):
-    """
-        Log-derivative in order to a
-    """
-    def __init__(self, a, b, c, wn):
-        super(dPolynomial_da, self).__init__(a, b, c, wn)
-        self.a = a
-        self.b = b
-        self.c = c
-        self.wn = wn
-
-    def __call__(self, r, t1, t2):
-        return self.c * t1 * t2 * (self.b + self.a*t1*t2)**(self.c-1) * self.a
-
-class dPolynomial_db(Polynomial):
-    """
-        Log-derivative in order to b
-    """
-    def __init__(self, a, b, c, wn):
-        super(dPolynomial_db, self).__init__(a, b, c, wn)
-        self.a = a
-        self.b = b
-        self.c = c
-        self.wn = wn
-
-    def __call__(self, r, t1, t2):
-        return self.c * (self.b +self.a * t1 * t2)**(self.c-1) * self.b
-
-class dPolynomial_dc(Polynomial):
-    """
-        Log-derivative in order to c
-    """
-    def __init__(self, a, b, c, wn):
-        super(dPolynomial_dc, self).__init__(a, b, c, wn)
-        self.a = a
-        self.b = b
-        self.c = c
-        self.wn = wn
-
-    def __call__(self, r, t1, t2):
-        return self.c * (self.b + self.a*t1*t2)**self.c*np.log(self.a*t1*t2 + self.b)
-
-class dPolynomial_dwn(Polynomial):
-    """
-        Log-derivative in order to the white noise
-    """
-    def __init__(self, a, b, c, wn):
-        super(dPolynomial_dwn, self).__init__(a, b, c, wn)
-        self.a = a
-        self.b = b
-        self.c = c
-        self.wn = wn
-
-    def __call__(self, r):
-        try:
-            return 2 * self.wn**2 * np.diag(np.diag(np.ones_like(r)))
-        except ValueError:
-            return np.zeros_like(r)
+        return (self.a * t1 * t2 + self.b)**self.c 
 
 
 ##### END

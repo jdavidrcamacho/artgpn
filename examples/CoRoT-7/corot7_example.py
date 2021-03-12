@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 #First step lets import everything we need
 import numpy as np
 import matplotlib.pyplot as plt
@@ -36,7 +33,7 @@ val4 /= val4.std()
 
 #Having the data we now choose our nodes and weights
 #A Periodic kernel for a node and a Squared Exponential kernel as weight
-nodes = [node.Periodic(20, 0.5, 0.0)] 
+nodes = [node.Periodic(20, 0.5)] 
 weights = [weight.SquaredExponential(1.0, 20)]
 #Due the way its implemented we need to give amplitudes separately to our weights
 weight_amplitudes = [1.0, 1.0, 1.0, 1.0]
@@ -57,6 +54,9 @@ GPnet = network(nodes, weights, weight_amplitudes, means, jitters, time,
 #Lets just check the likelihood of our model
 loglike = GPnet.log_likelihood(nodes, weights, weight_amplitudes, means, jitters)
 print(loglike)
+
+import sys
+sys.exit(0)
 
 #Now that we have a network we can run a MCMC to optimize our parameters
 #We will start with creating our priors 
