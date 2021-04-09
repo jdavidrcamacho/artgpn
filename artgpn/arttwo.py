@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 from scipy.linalg import cho_factor, cho_solve, LinAlgError
+from scipy.stats import norm,multivariate_normal
 from copy import copy
 
 from artgpn.node import Linear as nodeL
@@ -123,6 +124,28 @@ class network(object):
                 else:
                     m[i*N : (i+1)*N] = meanfun(time)
         return m
+    
+    
+    def sample(self, kernel, time):
+        """
+        Returns samples from the kernel
+        
+        Parameters
+        ----------
+        kernel: func
+            Covariance function
+        time: array
+            Time array
+
+        Returns
+        -------
+        norm: array
+            Sample of K 
+        """
+        mean = np.zeros_like(time)
+        norm = multivariate_normal(mean, kernel, allow_singular=True).rvs()
+        return norm
+
     
 ##### marginal likelihood functions
     def _covariance_matrix(self, nodes, weights, time, 
@@ -265,6 +288,42 @@ class network(object):
             except LinAlgError:
                 return -np.inf
         return log_like
+    
+    def marginalLikelihood_2ys(self, nodes, weights, means, jitters, 
+                               N=1000 , file = "saved_results.txt"):
+        f = open(file, "a")
+        m = self._mean(means)
+        m = np.array(np.array_split(m, 2))
+        err = np.array([np.sqrt(jitters[0]**2 + self.yerr[0]**2), 
+                        np.sqrt(jitters[1]**2 + self.yerr[1]**2)])
+        kernel = []
+        for i in range(1, self.p+1):
+            for j in range(1,self.q + 1):
+                nodePars = self._kernel_pars(nodes[j - 1])
+                weightPars = self._kernel_pars(weights[j-1 + self.q*(i-1)])
+                #node and weight functions kernel
+                w = self._kernel_matrix(type(weights[j-1 + self.q*(i-1)])(*weightPars), self.time)
+                f_hat = self._kernel_matrix(type(nodes[j - 1])(*nodePars), self.time)
+                #now we add all the necessary stuff
+                k_ii = (w * f_hat)
+            kernel.append(k_ii)
+        n = 0
+        llhoods = 0
+        while n<N:
+            sample1 = self.sample(kernel[0], self.time) + m[0]
+            sample2 = self.sample(kernel[1], self.time) + m[1]
+            normpdf1 = norm(loc=sample1, scale=err[0]).pdf(self.y[0])
+            normpdf2 = norm(loc=sample2, scale=err[1]).pdf(self.y[1])
+            llhood = np.array([normpdf1.prod(),normpdf2.prod()])
+            llhood = llhood.prod()
+            llhoods += llhood
+            sigmaN = 0
+            print(n, np.log(llhoods/n), sigmaN/np.sqrt(n))
+            n += 1
+            if n%500 ==0:
+                 print(n, np.log(llhoods/n), sigmaN/np.sqrt(n), file=f)
+        f.close()
+        return np.log(llhood/N)
     
 ##### GP prediction functions
     def prediction(self, nodes = None, weights = None,
