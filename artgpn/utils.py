@@ -162,4 +162,45 @@ def run_mcmc(prior_func, loglike_func, iterations = 1000, sampler = 'emcee', thr
     return results
 
 
-##### END
+##### RMS ######################################################################
+def rms(array, weights):
+    """ Root mean square of array
+        Parameters
+        ----------
+        array: array
+            Measurements
+        weights: array
+            weights = 1 / errors**2
+            To add jitter do 1 / (errors*2 + jitter**2)
+            
+        Returns
+        -------
+        rms: float
+            Root mean squared error
+    """
+    mu = np.average(array)
+    rms = np.sqrt(np.sum((array - mu)**2) / array.size)
+    return rms
+
+def wrms(array, weights):
+    """ Weighted root mean square of array, given weights 
+        
+        Parameters
+        ----------
+        array: array
+            Measurements
+        weights: array
+            weights = 1 / errors**2
+            To add jitter do 1 / (errors*2 + jitter**2)
+            
+        Returns
+        -------
+        rms: float
+            Weighted root mean squared error
+    """
+    mu = np.average(array, weights=weights)
+    rms = np.sqrt(np.sum(weights * (array - mu)**2) / np.sum(weights)) 
+    return rms
+
+### END
+
