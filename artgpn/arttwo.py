@@ -343,14 +343,16 @@ class network(object):
             Jitter value of each dataset
             dataset = 1,2,3,... accordingly to the data we are using, 
                     1 represents the first y(x), 2 the second y(x), etc...
+        time: array
+            Time of the predictions
         Returns
         -------
         y_mean: array
             Mean vector
         y_std: array
             Standard deviation vector
-        y_cov: array
-            Covariance matrix
+        time: array
+            Time of the predictions
         """
         print('Working with dataset {0}'.format(dataset))
         #means
@@ -391,7 +393,7 @@ class network(object):
         y_cov = Kstarstar - kstarT_k_kstar
         y_var = np.diag(y_cov) #variance
         y_std = np.sqrt(y_var) #standard deviation
-        return y_mean, y_std, y_cov
+        return y_mean, y_std, time
 
 
 ##### END

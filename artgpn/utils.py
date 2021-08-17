@@ -163,15 +163,12 @@ def run_mcmc(prior_func, loglike_func, iterations = 1000, sampler = 'emcee', thr
 
 
 ##### RMS ######################################################################
-def rms(array, weights):
+def rms(array):
     """ Root mean square of array
         Parameters
         ----------
         array: array
             Measurements
-        weights: array
-            weights = 1 / errors**2
-            To add jitter do 1 / (errors*2 + jitter**2)
             
         Returns
         -------
