@@ -1,6 +1,6 @@
 # artGPN
 
-
+<img align="left" width="180" height="180" src="https://i.imgur.com/NTzmBw8.png">
 -------------------------
 
 
