@@ -1,7 +1,5 @@
-# artGPN
 
-<img align="left" width="180" height="180" src="https://i.imgur.com/NTzmBw8.png">
--------------------------
+<img align="left" width="180" height="100" src="https://i.imgur.com/NTzmBw8.png">
 
 
 Package to use what I called Artificial Gaussian Processes Network, written in python 3x
