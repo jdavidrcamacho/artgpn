@@ -20,8 +20,18 @@ And you can imported in python with
 
     import artgpn
 
+If you wish to find more about it you can check my thesis where I give a brief explaination of this framework [here](https://repositorio-aberto.up.pt/handle/10216/141524) and cite it as:
 
+```bibtex
 
+@phdthesis{camacho2022advanced,
+  title={Advanced statistical data analysis methods for the detection of other Earths},
+  author={Camacho, Jo{\~a}o David Ribeiro},
+  year={2022},
+  school={University of Porto}
+}
+
+```
 -------------------------
 
 
