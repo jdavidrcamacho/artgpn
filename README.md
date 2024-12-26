@@ -33,5 +33,5 @@ If you wish to find more about it you can check my thesis where I give a brief e
 
 ```
 -------------------------
-
+2018-2025 [João Camacho](https://github.com/jdavidrcamacho)
 
